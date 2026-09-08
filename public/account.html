@@ -128,6 +128,7 @@
         .sub-item { cursor:pointer; transition:border-color var(--transition), box-shadow var(--transition); }
         .sub-item:hover { border-color:var(--primary); box-shadow:var(--shadow-md); }
         .sub-item:focus-visible { outline:2px solid var(--primary); outline-offset:1px; }
+        .sub-toggle { width:100%; margin-top:12px; font-size:0.82rem; }
         .sub-item .view-hint { font-size:0.74rem; color:var(--primary); margin-top:10px; display:inline-flex;
             align-items:center; gap:4px; font-weight:500; }
 
@@ -358,9 +359,8 @@
             var listHtml = '';
             if (subs && subs.length) {
                 window._mySubs = subs; // 供只读弹窗读取正文
-                subs.forEach(function (s) {
-                    listHtml +=
-                        '<div class="sub-item" role="button" tabindex="0" onclick="openSub(' + s.id + ')" ' +
+                function subItemHtml(s) {
+                    return '<div class="sub-item" role="button" tabindex="0" onclick="openSub(' + s.id + ')" ' +
                         'onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openSub(' + s.id + ');}">' +
                         '<div class="row1"><span class="status ' + s.status + '">' + statusLabel(s.status) + '</span>' +
                         '<span class="title">' + esc(s.title) + '</span>' +
@@ -374,7 +374,15 @@
                         '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' +
                         '查看正文</span>' +
                         '</div>';
-                });
+                }
+                // 默认只展示前 2 条，其余折叠，超过时提供展开/收起按钮
+                var shown = subs.slice(0, 2).map(subItemHtml).join('');
+                var hidden = subs.slice(2).map(subItemHtml).join('');
+                listHtml = shown;
+                if (subs.length > 2) {
+                    listHtml += '<div id="subMore" style="display:none;">' + hidden + '</div>' +
+                        '<button class="btn btn-ghost sub-toggle" id="subToggle" type="button" onclick="toggleSubs()">展开全部（共 ' + subs.length + ' 条）</button>';
+                }
             } else {
                 listHtml = '<div class="empty">还没有投稿，去投一篇吧</div>';
             }
@@ -444,6 +452,16 @@
         window.logout = function () {
             clearSession();
             location.reload(); // 重载本页后因无 token 显示登录入口
+        };
+
+        // 我的投稿：展开 / 收起（默认只显示前 2 条）
+        window.toggleSubs = function () {
+            var more = document.getElementById('subMore');
+            var btn = document.getElementById('subToggle');
+            if (!more || !btn) return;
+            var expanded = more.style.display !== 'none';
+            more.style.display = expanded ? 'none' : '';
+            btn.textContent = expanded ? '展开全部' : '收起（仅显示前 2 条）';
         };
 
         // 只读弹窗：打开 / 关闭
