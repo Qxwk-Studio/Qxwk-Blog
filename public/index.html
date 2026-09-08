@@ -67,7 +67,6 @@
             padding: 18px; display: flex; flex-direction: column; text-align: center; align-items: center;
             text-decoration: none; color: var(--text-primary);
             box-shadow: var(--shadow-sm); transition: transform var(--transition), box-shadow var(--transition); grid-area: mag; }
-        .mag-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
         .mag-icon { width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
             background: #dbeafe; color: #2563eb;
             display: flex; align-items: center; justify-content: center; }
@@ -372,6 +371,14 @@
 
     // ===== 通行证登录（与 account 页一致：token 存同源 localStorage，key=qxwk_mag_token） =====
     var BLOG_TOKEN_KEY = 'qxwk_mag_token';
+    // SSO 落地：通行证中控确认后整页回跳本站，URL 片段带 #_t=<token>；读取存入本地并清理地址栏
+    (function () {
+        var m = location.hash.match(/[#&]_t=([^&]+)/);
+        if (!m) return;
+        var t = decodeURIComponent(m[1]);
+        try { localStorage.setItem(BLOG_TOKEN_KEY, t); } catch (e) {}
+        history.replaceState(null, '', location.pathname + location.search);
+    })();
     function blogToken() { try { return localStorage.getItem(BLOG_TOKEN_KEY) || ''; } catch (e) { return ''; } }
     function blogFetch(path, opts) {
         opts = opts || {};
@@ -379,20 +386,12 @@
         if (opts.body) opts.headers['Content-Type'] = 'application/json';
         return fetch(path, opts);
     }
+    // 通行证登录（index 中控 · 统一分流）：整页跳转通行证主页 ?redirect= 本站，
+    // 登录 + 授权确认由中控完成，确认后回跳本站 #_t=<token>（桌面/手机/微信一致，不受弹窗拦截）
     function passportLogin() {
-        var ssoUrl = 'https://account.qxwkstudio.top/authorize.html?redirect=' +
-            encodeURIComponent(location.origin + location.pathname);
-        if (/(Android|iPhone|iPad|iPod|Mobile)/i.test(navigator.userAgent)) { location.href = ssoUrl; return; }
-        var w = window.open(ssoUrl + '&popup=1', 'qxwk_sso', 'width=420,height=640');
-        if (!w) alert('请允许浏览器弹出窗口，以便完成通行证登录');
+        var here = location.origin + location.pathname;
+        location.href = 'https://account.qxwkstudio.top/?redirect=' + encodeURIComponent(here);
     }
-    window.addEventListener('message', function (e) {
-        if (e.origin !== 'https://account.qxwkstudio.top') return;
-        var d = e.data || {};
-        if (d.type !== 'qxwk-sso' || !d.token) return;
-        try { localStorage.setItem(BLOG_TOKEN_KEY, d.token); } catch (err) {}
-        location.reload();
-    });
     function needLogin() {
         if (blogToken()) return true;
         showToast('请先登录');

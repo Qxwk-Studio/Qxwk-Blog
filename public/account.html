@@ -303,26 +303,20 @@
                 p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
         }
 
-        // 通行证登录：电脑端弹窗（popup=1，登录后 postMessage 回传并关窗）；
-        // 手机端（含微信）无法可靠使用弹窗回传，改整页跳转（登录后带 token 回跳本页，由 ssoLanding 落地）
+        // 通行证登录（index 中控 · 统一分流）：整页跳转通行证主页 ?redirect= 本站，
+        // 登录 + 授权确认由中控完成，确认后回跳本站 #_t=<token>（桌面/手机/微信一致，不受弹窗拦截）
         function passportLogin() {
-            var ssoUrl = 'https://account.qxwkstudio.top/authorize.html?redirect=' +
-                encodeURIComponent(location.origin + location.pathname);
-            if (/(Android|iPhone|iPad|iPod|Mobile)/i.test(navigator.userAgent)) {
-                location.href = ssoUrl;
-                return;
-            }
-            var w = window.open(ssoUrl + '&popup=1', 'qxwk_sso', 'width=420,height=640');
-            if (!w) alert('请允许浏览器弹出窗口，以便完成通行证登录');
+            var here = location.origin + location.pathname;
+            location.href = 'https://account.qxwkstudio.top/?redirect=' + encodeURIComponent(here);
         }
-        // 监听通行证弹窗回传：type=qxwk-sso 且 origin 为通行证时落地登录并刷新
-        window.addEventListener('message', function (e) {
-            if (e.origin !== 'https://account.qxwkstudio.top') return;
-            var d = e.data || {};
-            if (d.type !== 'qxwk-sso' || !d.token) return;
-            try { localStorage.setItem(MAG_TOKEN_KEY, d.token); } catch (err) {}
-            location.reload();
-        });
+        // SSO 落地：读取 #_t=<token> 存入本地并清理地址栏
+        (function () {
+            var m = location.hash.match(/[#&]_t=([^&]+)/);
+            if (!m) return;
+            var t = decodeURIComponent(m[1]);
+            try { localStorage.setItem(MAG_TOKEN_KEY, t); } catch (err) {}
+            history.replaceState(null, '', location.pathname + location.search);
+        })();
 
         function showToast(msg) {
             var el = document.getElementById('toast');
