@@ -38,69 +38,25 @@ function parseJsonArray(s) {
   try { const v = JSON.parse(s || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
 }
 
-// MD5（经典实现，通行证同款，用于派生 WeAvatar 头像链接）
-function md5(s) {
-  function rotl(x, c) { return (x << c) | (x >>> (32 - c)); }
-  const bytes = new TextEncoder().encode(s);
-  const K = [0xd76aa478,0xe8c7b756,0x242070db,0xc1bdceee,0xf57c0faf,0x4787c62a,0xa8304613,0xfd469501,
-    0x698098d8,0x8b44f7af,0xffff5bb1,0x895cd7be,0x6b901122,0xfd987193,0xa679438e,0x49b40821,
-    0xf61e2562,0xc040b340,0x265e5a51,0xe9b6c7aa,0xd62f105d,0x02441453,0xd8a1e681,0xe7d3fbc8,
-    0x21e1cde6,0xc33707d6,0xf4d50d87,0x455a14ed,0xa9e3e905,0xfcefa3f8,0x676f02d9,0x8d2a4c8a,
-    0xfffa3942,0x8771f681,0x6d9d6122,0xfde5380c,0xa4beea44,0x4bdecfa9,0xf6bb4b60,0xbebfbc70,
-    0x289b7ec6,0xeaa127fa,0xd4ef3085,0x04881d05,0xd9d4d039,0xe6db99e5,0x1fa27cf8,0xc4ac5665,
-    0xf4292244,0x432aff97,0xab9423a7,0xfc93a039,0x655b59c3,0x8f0ccc92,0xffeff47d,0x85845dd1,
-    0x6fa87e4f,0xfe2ce6e0,0xa3014314,0x4e0811a1,0xf7537e82,0xbd3af235,0x2ad7d2bb,0xeb86d391];
-  const S = [7,12,17,22,7,12,17,22,7,12,17,22,7,12,17,22,5,9,14,20,5,9,14,20,5,9,14,20,5,9,14,20,
-    4,11,16,23,4,11,16,23,4,11,16,23,4,11,16,23,6,10,15,21,6,10,15,21,6,10,15,21,6,10,15,21];
-  const n = bytes.length;
-  const x = new Array(16 + (((n + 8) >> 6) << 4)).fill(0);
-  for (let i = 0; i < n; i++) x[i >> 2] = (x[i >> 2] | (bytes[i] << ((i % 4) * 8))) >>> 0;
-  x[n >> 2] = (x[n >> 2] | (0x80 << ((n % 4) * 8))) >>> 0;
-  x[(((n + 8) >> 6) << 4) + 14] = (n * 8) >>> 0;
-  x[(((n + 8) >> 6) << 4) + 15] = Math.floor(n / 536870912) >>> 0;
-  let a = 0x67452301, b = 0xefcdab89, c = 0x98badcfe, d = 0x10325476;
-  for (let i = 0; i < x.length; i += 16) {
-    const A0 = a, B0 = b, C0 = c, D0 = d;
-    for (let j = 0; j < 64; j++) {
-      let f, g;
-      if (j < 16) { f = (b & c) | (~b & d); g = j; }
-      else if (j < 32) { f = (d & b) | (~d & c); g = (5 * j + 1) % 16; }
-      else if (j < 48) { f = b ^ c ^ d; g = (3 * j + 5) % 16; }
-      else { f = c ^ (b | ~d); g = (7 * j) % 16; }
-      const tmp = d; d = c; c = b;
-      b = (b + rotl((a + f + K[j] + x[i + g]) | 0, S[j])) | 0;
-      a = tmp;
-    }
-    a = (a + A0) | 0; b = (b + B0) | 0; c = (c + C0) | 0; d = (d + D0) | 0;
-  }
-  function hex(w) {
-    const h = '0123456789abcdef';
-    let out = '';
-    for (let k = 0; k < 4; k++) out += h.charAt((w >> (k * 8 + 4)) & 0xf) + h.charAt((w >> (k * 8)) & 0xf);
-    return out;
-  }
-  return hex(a) + hex(b) + hex(c) + hex(d);
-}
-
-// 头像直接由邮箱派生：仅 QQ 邮箱返回 WeAvatar 链接，其余返回 null（前端回退首字头像）
-function avatarFromEmail(email) {
-  if (!email) return null;
-  if (!/@qq\.com$/i.test(String(email).trim())) return null;
-  return 'https://weavatar.com/avatar/' + md5(String(email).trim().toLowerCase()) + '?s=400&d=404';
-}
-
 async function handleApi(request, env) {
   const url = new URL(request.url);
   const path = url.pathname;
   const method = request.method;
   const DB = env.DB;
 
-  // GET /api/me（登录：返回本地用户信息，token 经通行证验证）
+  // GET /api/me（登录：返回本地用户信息，token 经通行证验证；含个人博客统计）
   if (method === 'GET' && path === '/api/me') {
     const v = await resolveViewer(DB, request);
     if (!v) return error('未登录', 401);
     const u = await DB.prepare('SELECT created_at FROM users WHERE id = ?').bind(v.id).first();
-    return json({ userId: v.id, nickname: v.nickname, color: v.color, is_admin: v.isAdmin, created_at: u && u.created_at, avatar: v.avatar });
+    const stat = await DB.prepare(
+      'SELECT COUNT(*) AS total, COALESCE(SUM(featured), 0) AS featured FROM bg_blogs WHERE user_id = ? AND is_deleted = 0'
+    ).bind(v.id).first();
+    return json({
+      userId: v.id, nickname: v.nickname, color: v.color, is_admin: v.isAdmin,
+      created_at: u && u.created_at, avatar: v.avatar,
+      blogs_count: stat ? stat.total : 0, featured_count: stat ? stat.featured : 0,
+    });
   }
 
   // POST /api/submit（登录：提交未阔月刊投稿）
@@ -202,7 +158,7 @@ async function handleApi(request, env) {
     const v = await getViewer(DB, request);
     const select =
       `SELECT b.id, b.user_id, b.content, b.topics, b.mentions, b.featured, b.likes_count, b.created_at, b.updated_at,
-              u.nickname, u.color, u.email
+              u.nickname, u.color, u.avatar
        FROM bg_blogs b JOIN users u ON b.user_id = u.id
        WHERE b.is_deleted = 0` +
       (topic ? " AND EXISTS (SELECT 1 FROM json_each(b.topics) WHERE json_each.value = ?)" : '');
@@ -219,7 +175,7 @@ async function handleApi(request, env) {
       uid: r.user_id,
       nickname: r.nickname,
       color: r.color,
-      avatar: avatarFromEmail(r.email),
+      avatar: r.avatar,
       content: r.content,
       topics: parseJsonArray(r.topics),
       mentions: parseJsonArray(r.mentions),
@@ -240,14 +196,14 @@ async function handleApi(request, env) {
     const v = await getViewer(DB, request);
     const row = await DB.prepare(
       `SELECT b.id, b.user_id, b.content, b.topics, b.mentions, b.featured, b.likes_count, b.created_at, b.updated_at,
-              u.nickname, u.color, u.email
+              u.nickname, u.color, u.avatar
        FROM bg_blogs b JOIN users u ON b.user_id = u.id
        WHERE b.id = ? AND b.is_deleted = 0`
     ).bind(Number(blogMatch[1])).first();
     if (!row) return error('博客不存在', 404);
     return json({
       blog: {
-        bid: row.id, uid: row.user_id, nickname: row.nickname, color: row.color, avatar: avatarFromEmail(row.email),
+        bid: row.id, uid: row.user_id, nickname: row.nickname, color: row.color, avatar: row.avatar,
         content: row.content, topics: parseJsonArray(row.topics), mentions: parseJsonArray(row.mentions),
         featured: !!row.featured, likes_count: row.likes_count, created_at: row.created_at,
         updated_at: row.updated_at, is_owner: v.userId > 0 && row.user_id === v.userId,

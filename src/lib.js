@@ -34,7 +34,7 @@ async function getPassportUser(request) {
   }
 }
 
-// 通行证用户 -> 本地 CF 用户：首次自动建（颜色同步通行证），返回 {id, nickname, color, isAdmin, avatar} 或 null
+// 通行证用户 -> 本地 CF 用户：首次自动建（颜色/头像同步通行证），返回 {id, nickname, color, isAdmin, avatar} 或 null
 async function resolveViewer(DB, request) {
   const p = await getPassportUser(request);
   if (!p) return null;
@@ -44,19 +44,21 @@ async function resolveViewer(DB, request) {
   // 优先看本地是否已有该用户；否则仅当真正新用户才 INSERT。
   // 不能用 `INSERT ... ON CONFLICT DO UPDATE` 做"幂等"：它即使走 UPDATE 分支也会消耗
   // AUTOINCREMENT 序列，登录页并发多个接口就会让 sqlite_sequence 虚增（users 行数却不变）。
-  let u = await DB.prepare('SELECT id, nickname, color, is_admin FROM users WHERE nickname = ?')
+  let u = await DB.prepare('SELECT id, nickname, color, is_admin, avatar FROM users WHERE nickname = ?')
     .bind(nickname).first();
   if (!u) {
     // INSERT OR IGNORE：兜住并发首插竞争；冲突被忽略时不会消耗自增序列
-    await DB.prepare('INSERT OR IGNORE INTO users (nickname, color) VALUES (?, ?)')
-      .bind(nickname, p.color).run();
-    u = await DB.prepare('SELECT id, nickname, color, is_admin FROM users WHERE nickname = ?')
+    await DB.prepare('INSERT OR IGNORE INTO users (nickname, color, avatar) VALUES (?, ?, ?)')
+      .bind(nickname, p.color, p.avatar).run();
+    u = await DB.prepare('SELECT id, nickname, color, is_admin, avatar FROM users WHERE nickname = ?')
       .bind(nickname).first();
     if (!u) return null; // 极端并发下仍失败，放弃本次映射
-  } else if (u.color !== p.color) {
-    // color 同步用 UPDATE，不消耗自增序列
-    await DB.prepare('UPDATE users SET color = ? WHERE id = ?').bind(p.color, u.id).run();
+  }
+  if (u.color !== p.color || u.avatar !== p.avatar) {
+    // color/avatar 同步用 UPDATE，不消耗自增序列（头像为通行证算好的 WeAvatar 链接，无邮箱时为 null）
+    await DB.prepare('UPDATE users SET color = ?, avatar = ? WHERE id = ?').bind(p.color, p.avatar, u.id).run();
     u.color = p.color;
+    u.avatar = p.avatar;
   }
   return u ? { id: u.id, nickname: u.nickname, color: u.color, isAdmin: !!u.is_admin, avatar: p.avatar } : null;
 }

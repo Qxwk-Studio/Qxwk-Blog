@@ -114,7 +114,9 @@
         .profile-avatar-letter { display: flex; align-items: center; justify-content: center; color: #fff;
             font-size: 1.3rem; font-weight: 700; }
         .profile-card .nick { margin-top: 10px; font-size: 0.98rem; font-weight: 700; }
-        .profile-card .bio { margin-top: 2px; font-size: 0.74rem; color: var(--text-tertiary); }
+        .profile-card .bio { margin-top: 2px; font-size: 0.74rem; color: var(--text-tertiary);
+            display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .profile-card .bio .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
         .profile-stats { display: flex; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
         .profile-stats .stat { flex: 1; min-width: 0; }
         .profile-stats .stat + .stat { border-left: 1px solid var(--border); }
@@ -691,10 +693,10 @@
     function loggedInHtml(me) {
         return profileAvatarHtml(me) +
             '<div class="nick">' + esc(me.nickname) + '</div>' +
-            '<div class="bio"' + (me.color ? ' style="color:' + esc(me.color) + '"' : '') + '>随心记录，定期成刊</div>' +
+            '<div class="bio"><span class="dot" style="background:' + esc(me.color || '#94a3b8') + ';"></span>专属颜色</div>' +
             '<div class="profile-stats">' +
-                '<div class="stat"><b>0</b><span>发布的文章</span></div>' +
-                '<div class="stat"><b>0</b><span>入选的文章</span></div>' +
+                '<div class="stat"><b>' + (me.blogs_count || 0) + '</b><span>发布的博客</span></div>' +
+                '<div class="stat"><b>' + (me.featured_count || 0) + '</b><span>入选的博客</span></div>' +
             '</div>' +
             '<div class="mag-actions">' +
                 '<a href="account" class="mag-btn mag-btn-ghost">个人中心' +
