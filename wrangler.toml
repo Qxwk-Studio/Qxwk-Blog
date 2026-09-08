@@ -1,0 +1,14 @@
+name = "qxwk-blog"
+main = "src/worker.js"
+compatibility_date = "2026-08-05"
+compatibility_flags = ["nodejs_compat"]
+
+# 静态资源目录（public/）
+[assets]
+directory = "public"
+
+# D1 数据库绑定（与 Qxwk-CityFootprint 共享同一数据库）
+[[d1_databases]]
+binding = "DB"
+database_name = "qxwk-data"
+database_id = "60221417-13f8-486c-9f95-43e5fefe95d5"

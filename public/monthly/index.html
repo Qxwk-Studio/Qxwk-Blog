@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>未阔月刊 - 青翔未阔工作室</title>
+    <meta name="description" content="《未阔月刊》——青翔未阔工作室的每月一刊，汇聚工作室博客、项目进展与成员随笔。">
+    <link rel="icon" type="image/webp" href="/favicon.webp">
+    <style>
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --primary: #2563eb; --primary-hover: #1d4ed8;
+            --secondary: #0d9488;
+            --surface: #ffffff; --bg: #f8fafc;
+            --text-primary: #0f172a; --text-secondary: #64748b; --text-tertiary: #94a3b8;
+            --border: #e2e8f0; --navbar-bg: rgba(255, 255, 255, 0.8);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06); --shadow-md: 0 4px 16px rgba(0,0,0,0.08); --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+            --radius-sm: 8px; --radius-md: 14px;
+            --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+            --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            --container: 1100px; --nav-height: 64px;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-sans); background: var(--bg); color: var(--text-primary);
+            line-height: 1.6; -webkit-font-smoothing: antialiased;
+            min-height: 100vh; display: flex; flex-direction: column;
+        }
+        .navbar { position:sticky; top:0; width:100%; height:var(--nav-height); z-index:100;
+            background:var(--navbar-bg); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+            border-bottom:1px solid var(--border); }
+        .navbar-inner { max-width:var(--container); margin:0 auto; padding:0 24px;
+            display:flex; align-items:center; justify-content:space-between; height:100%; }
+        .navbar-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text-primary);
+            font-weight:600; font-size:1.15rem; letter-spacing:0.3px; transition:opacity var(--transition); }
+        .navbar-brand:hover { opacity:0.85; }
+        .brand-text { line-height: 1.25; }
+        .brand-text b { display: block; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; }
+        .brand-text span { display: block; font-size: 11px; color: var(--text-tertiary); }
+        .back-link { display:inline-flex; align-items:center; gap:6px; padding:8px 18px;
+            background:rgba(37,99,235,0.15); color:var(--text-primary); text-decoration:none;
+            border-radius:40px; font-size:0.88rem; font-weight:500;
+            backdrop-filter:blur(4px); border:1px solid rgba(147,197,253,0.35);
+            transition:all var(--transition); white-space:nowrap; }
+        .back-link:hover { background:rgba(37,99,235,0.3); border-color:rgba(147,197,253,0.6); transform:scale(1.02); }
+        .main { flex:1; padding:36px 24px 60px; }
+        .container { max-width:var(--container); margin:0 auto; }
+        .page-header { margin-bottom:32px; }
+        .page-head-row { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+        .page-head-left { min-width:0; }
+        .page-header h1 { font-size:clamp(1.5rem,3vw,2rem); font-weight:700; color:var(--text-primary);
+            display:flex; align-items:center; gap:10px; }
+        .page-header .tagline { font-size:0.95rem; color:var(--text-secondary); margin-top:8px; }
+        .submit-btn { display:inline-flex; align-items:center; gap:6px; padding:9px 20px;
+            background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#fff; border:none;
+            border-radius:40px; font-size:0.88rem; font-weight:500; cursor:pointer; font-family:var(--font-sans);
+            flex-shrink:0; transition:all var(--transition); }
+        .submit-btn:hover { transform:scale(1.03); box-shadow:0 6px 20px rgba(37,99,235,0.3); }
+        .account-btn { display:inline-flex; align-items:center; gap:6px; padding:9px 18px;
+            background:var(--surface); color:var(--primary); text-decoration:none;
+            border:1px solid var(--border); border-radius:40px; font-size:0.88rem; font-weight:500;
+            flex-shrink:0; transition:all var(--transition); }
+        .account-btn:hover { border-color:var(--primary); background:var(--primary-light); transform:scale(1.03); }
+
+        /* ===== Series overview ===== */
+        .series-bar { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+            padding:18px 20px; margin-bottom:28px; box-shadow:var(--shadow-sm); }
+        .series-head { display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none; }
+        .series-title { font-size:0.92rem; font-weight:600; color:var(--text-primary); display:flex; align-items:center; gap:8px; }
+        .series-title .dot { display:inline-block; width:6px; height:6px; border-radius:50%;
+            background:linear-gradient(135deg,var(--primary),var(--secondary)); }
+        .series-toggle { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px;
+            border-radius:50%; background:var(--bg); border:1px solid var(--border); color:var(--text-secondary);
+            transition:transform var(--transition), background var(--transition); }
+        .series-bar.collapsed .series-toggle { transform:rotate(-90deg); }
+        .series-body { overflow:hidden; max-height:1000px; transition:max-height 0.35s ease, margin-top 0.35s ease; }
+        .series-bar.collapsed .series-body { max-height:0; margin-top:0; }
+        .series-scroll { display:flex; flex-wrap:wrap; gap:10px; padding:14px 2px 4px; }
+        .series-chip { display:flex; align-items:center; gap:10px; padding:10px 14px;
+            background:var(--bg); border:1px solid var(--border); border-radius:12px; cursor:default;
+            transition:transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+            flex:1 0 calc(33.333% - 7px); min-width:0; }
+        .series-chip:hover { transform:translateY(-1px); border-color:var(--primary); box-shadow:var(--shadow-sm); }
+        .series-chip .sc-icon { font-size:1.3rem; line-height:1; flex-shrink:0; }
+        .series-chip .sc-info { min-width:0; flex:1; }
+        .series-chip .sc-name { font-size:0.84rem; font-weight:600; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .series-chip .sc-meta { font-size:0.74rem; color:var(--text-tertiary); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .series-chip .sc-count { font-size:0.72rem; font-weight:600; padding:3px 8px; border-radius:40px;
+            background:var(--primary-subtle); color:var(--primary); flex-shrink:0; white-space:nowrap; }
+        .series-chip .sc-count.done { background:rgba(239, 68, 68, 0.12); color:#ef4444; }
+
+        /* ===== Featured (latest issue) ===== */
+        .featured { display:grid; grid-template-columns: 1.1fr 1fr; gap:0; margin-bottom:48px;
+            background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+            overflow:hidden; box-shadow:var(--shadow-sm); transition:box-shadow var(--transition), transform var(--transition); }
+        .featured:hover { box-shadow:var(--shadow-lg); transform:translateY(-2px); }
+        .featured-cover { position:relative; min-height:260px; background:var(--bg); }
+        .featured-cover img { width:100%; height:100%; object-fit:cover; display:block; position:absolute; inset:0; }
+        .featured-cover .issue-badge { position:absolute; top:14px; left:14px; z-index:2;
+            background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#fff;
+            font-size:0.72rem; font-weight:600; letter-spacing:0.5px; padding:4px 12px; border-radius:40px;
+            box-shadow:var(--shadow-sm); }
+        .featured-content { padding:28px 30px; display:flex; flex-direction:column; justify-content:center; }
+        .featured-content .meta { display:flex; align-items:center; gap:10px; font-size:0.82rem;
+            color:var(--text-tertiary); margin-bottom:10px; }
+        .featured-content .meta .dot { width:3px; height:3px; border-radius:50%; background:var(--text-tertiary); }
+        .featured-content .art-count { font-size:0.78rem; color:var(--text-tertiary); margin-bottom:6px; }
+        .featured-content h2 { font-size:clamp(1.3rem,2.5vw,1.6rem); font-weight:700; color:var(--text-primary);
+            margin-bottom:12px; line-height:1.3; }
+        .featured-content .summary { font-size:0.92rem; color:var(--text-secondary); line-height:1.7; margin-bottom:22px; }
+        .read-btn { display:inline-flex; align-items:center; gap:8px; align-self:flex-start;
+            padding:10px 22px; background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#fff;
+            text-decoration:none; border-radius:40px; font-size:0.88rem; font-weight:500; cursor:pointer; border:none;
+            transition:transform var(--transition), box-shadow var(--transition); }
+        .read-btn:hover { transform:scale(1.03); box-shadow:0 6px 20px rgba(37,99,235,0.3); }
+
+        /* ===== Past issues ===== */
+        .section-label { display:flex; align-items:center; gap:8px; font-size:1rem; font-weight:600;
+            color:var(--text-primary); margin-bottom:18px; }
+        .section-label .line { flex:1; height:1px; background:var(--border); }
+        .issues-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+        .issue-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+            overflow:hidden; cursor:pointer; transition:transform var(--transition), box-shadow var(--transition);
+            display:flex; flex-direction:column; }
+        .issue-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-md); }
+        .issue-card .card-cover { position:relative; aspect-ratio:16/9; background:var(--bg); overflow:hidden; }
+        .issue-card .card-cover img { width:100%; height:100%; object-fit:cover; display:block;
+            transition:transform 0.3s ease; }
+        .issue-card:hover .card-cover img { transform:scale(1.05); }
+        .issue-card .card-num { position:absolute; top:10px; left:10px; z-index:2;
+            background:rgba(15,23,42,0.7); color:#fff; backdrop-filter:blur(4px);
+            font-size:0.7rem; font-weight:600; padding:3px 10px; border-radius:40px; }
+        .issue-card .card-body { padding:16px 18px 18px; }
+        .issue-card .card-date { font-size:0.78rem; color:var(--text-tertiary); margin-bottom:6px; }
+        .issue-card .card-title { font-size:1.05rem; font-weight:600; color:var(--text-primary); margin-bottom:8px; }
+        .issue-card .card-summary { font-size:0.84rem; color:var(--text-secondary); line-height:1.6;
+            display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; line-clamp:2; overflow:hidden; }
+
+        /* ===== States ===== */
+        .loading-state { text-align:center; padding:80px 20px; color:var(--text-secondary); }
+        .spinner { display:inline-block; width:22px; height:22px; margin-right:8px;
+            border:2px solid var(--border); border-top-color:var(--primary); border-radius:50%;
+            animation:spin 0.8s linear infinite; vertical-align:middle; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .empty-state { text-align:center; padding:80px 20px; color:var(--text-tertiary); font-size:0.95rem; }
+        .error-msg { background:#fef2f2; border:1px solid #fecaca; color:#b91c1c;
+            padding:14px 18px; border-radius:var(--radius-sm); margin-bottom:16px; font-size:0.88rem; }
+
+        /* ===== Reader modal ===== */
+        .reader { display:none; position:fixed; inset:0; z-index:2000; background:rgba(15,23,42,0.6);
+            backdrop-filter:blur(6px); justify-content:center; align-items:flex-start; padding:28px 24px;
+            overflow-y:auto; }
+        .reader.active { display:flex; }
+        .reader-dialog { background:var(--surface); border-radius:var(--radius-md); max-width:1200px; width:100%;
+            margin:auto; box-shadow:var(--shadow-lg); animation:rdIn 0.25s ease; overflow:hidden; }
+        @media (min-width:1200px) { .reader-dialog { max-width:1280px; } }
+        @keyframes rdIn { from { transform:translateY(20px); opacity:0.5; } to { transform:translateY(0); opacity:1; } }
+        .reader-head { position:relative; }
+        .reader-cover { position:relative; aspect-ratio:16/5; background:var(--bg); overflow:hidden; }
+        .reader-cover img { width:100%; height:100%; object-fit:cover; display:block; }
+        .reader-cover::after { content:''; position:absolute; inset:0;
+            background:linear-gradient(transparent 40%, rgba(0,0,0,0.55)); }
+        .reader-titlewrap { position:absolute; bottom:0; left:0; right:0; padding:28px 36px; z-index:2; color:#fff; }
+        .reader-titlewrap .meta { font-size:0.85rem; opacity:0.9; margin-bottom:8px; display:flex; align-items:center; gap:10px; }
+        .reader-titlewrap h2 { font-size:clamp(1.5rem,3vw,2.1rem); font-weight:700; line-height:1.25; }
+        .reader-close { position:absolute; top:16px; right:16px; z-index:3; background:rgba(15,23,42,0.5);
+            color:#fff; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer;
+            display:flex; align-items:center; justify-content:center; transition:background var(--transition); }
+        .reader-close:hover { background:rgba(15,23,42,0.8); }
+
+        /* Reader body: TOC + article */
+        .reader-body { display:flex; gap:0; }
+        .reader-toc { flex-shrink:0; width:260px; padding:30px 20px 30px 32px; border-right:1px solid var(--border);
+            position:sticky; top:0; align-self:flex-start; max-height:calc(100vh - 56px); overflow-y:auto; }
+        .reader-toc .toc-label { font-size:0.78rem; font-weight:600; color:var(--text-tertiary);
+            letter-spacing:0.5px; margin-bottom:14px; padding-left:4px; }
+        .reader-toc .toc-list { display:flex; flex-direction:column; gap:2px; }
+        .toc-item { display:block; text-align:left; padding:9px 12px; background:none; border:none; cursor:pointer;
+            border-radius:var(--radius-sm); font-size:0.86rem; color:var(--text-secondary); line-height:1.4;
+            transition:all var(--transition); font-family:var(--font-sans); }
+        .toc-item:hover { background:var(--primary-subtle); color:var(--primary); }
+        .toc-item.active { background:linear-gradient(135deg,rgba(37,99,235,0.12),rgba(13,148,136,0.10)); color:var(--primary); font-weight:600; }
+        .toc-item .toc-num { display:inline-block; width:20px; color:var(--text-tertiary); font-size:0.76rem; }
+        .toc-item.active .toc-num { color:var(--primary); }
+
+        .reader-article { flex:1; min-width:0; padding:30px 40px 44px; }
+        .article-head { margin-bottom:22px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+        .article-head h3 { font-size:1.5rem; font-weight:700; color:var(--text-primary); margin-bottom:8px; }
+        .article-head .art-meta { font-size:0.82rem; color:var(--text-tertiary); }
+        .article-content p { font-size:1rem; color:var(--text-primary); line-height:1.95;
+            white-space:pre-line; margin-bottom:16px; text-indent:2em; }
+        .article-content p:last-child { margin-bottom:0; }
+        .article-loading { text-align:center; padding:48px 20px; color:var(--text-secondary); font-size:0.88rem; }
+        .article-error { background:#fef2f2; border:1px solid #fecaca; color:#b91c1c;
+            padding:14px 18px; border-radius:var(--radius-sm); font-size:0.86rem; line-height:1.6; }
+        .article-nav { display:flex; justify-content:space-between; gap:12px; margin-top:32px;
+            padding-top:20px; border-top:1px solid var(--border); }
+        .art-nav-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px;
+            background:var(--bg); border:1px solid var(--border); border-radius:40px; cursor:pointer;
+            font-size:0.84rem; color:var(--text-secondary); font-family:var(--font-sans); transition:all var(--transition); }
+        .art-nav-btn:hover:not(:disabled) { border-color:var(--primary); color:var(--primary); }
+        .art-nav-btn:disabled { opacity:0.4; cursor:not-allowed; }
+        .art-nav-btn .lbl { max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+        .footer { background:#0f172a; text-align:center; padding:28px 24px;
+            color:var(--text-tertiary); font-size:0.85rem; border-top:1px solid rgba(255,255,255,0.06); }
+        .footer-copy { opacity:0.6; }
+
+        /* ===== Toast（与主站"开发中"一致） ===== */
+        .toast { position:fixed; top:-60px; left:50%; transform:translateX(-50%);
+            background:var(--surface); color:var(--text-primary); border:1px solid var(--border);
+            padding:12px 24px; border-radius:var(--radius-sm); font-size:0.9rem; font-weight:500;
+            z-index:3000; opacity:0; pointer-events:none;
+            box-shadow:0 4px 20px rgba(0,0,0,0.1);
+            display:flex; align-items:center; gap:10px;
+            transition:top 0.35s ease, opacity 0.35s ease; }
+        .toast svg { color:var(--primary); flex-shrink:0; }
+        .toast.show { top:80px; opacity:1; }
+
+        @media (max-width:900px) {
+            .issues-grid { grid-template-columns:repeat(2,1fr); }
+            .featured { grid-template-columns:1fr; }
+            .featured-cover { min-height:200px; aspect-ratio:16/9; }
+            .series-chip { flex:1 0 calc(50% - 5px); }
+        }
+        @media (max-width:640px) {
+            .navbar-inner { padding:0 16px; }
+            .main { padding:24px 16px 40px; }
+            .series-bar { padding:14px 14px; margin-bottom:22px; }
+            .series-chip { flex:1 0 100%; padding:8px 12px; }
+            .issues-grid { grid-template-columns:1fr; gap:16px; }
+            .featured-content { padding:22px 20px; }
+            .reader { padding:0; }
+            .reader-dialog { border-radius:0; min-height:100vh; }
+            .reader-titlewrap { padding:20px 20px; }
+            .reader-body { flex-direction:column; }
+            .reader-toc { width:100%; position:static; max-height:none; border-right:none; border-bottom:1px solid var(--border);
+                padding:16px 20px; }
+            .reader-toc .toc-list { flex-direction:row; overflow-x:auto; gap:6px; padding-bottom:4px; }
+            .toc-item { white-space:nowrap; flex-shrink:0; }
+            .reader-article { padding:22px 20px 32px; }
+        }
+        @media (prefers-reduced-motion:reduce) {
+            *, *::before, *::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; }
+        }
+    </style>
+    <meta name="color-scheme" content="light dark">
+    <script>
+    /* 主题切换：localStorage('theme') 优先，其次跟随系统 prefers-color-scheme；同步写入 <html> 的 data-theme 防闪烁 */
+    (function () {
+        var KEY = 'theme';
+        var root = document.documentElement;
+        var mq = window.matchMedia('(prefers-color-scheme: dark)');
+        function system() { return mq.matches ? 'dark' : 'light'; }
+        function stored() { try { var v = localStorage.getItem(KEY); return (v === 'dark' || v === 'light') ? v : null; } catch (e) { return null; } }
+        function apply(t) { root.setAttribute('data-theme', t); }
+        function current() { return stored() || system(); }
+        apply(current());
+        function toggle() { var next = current() === 'dark' ? 'light' : 'dark'; apply(next); try { localStorage.setItem(KEY, next); } catch (e) {} }
+        function bind() {
+            var btn = document.getElementById('themeToggle');
+            if (btn) btn.addEventListener('click', toggle);
+            if (mq.addEventListener) mq.addEventListener('change', function (e) { if (!stored()) apply(e.matches ? 'dark' : 'light'); });
+            else if (mq.addListener) mq.addListener(function (e) { if (!stored()) apply(e.matches ? 'dark' : 'light'); });
+            window.addEventListener('storage', function (e) { if (e.key === KEY) apply(current()); });
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind); else bind();
+    })();
+    </script>
+    <style>
+        /* ===== 黑夜模式：主题切换按钮 ===== */
+        .theme-toggle { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; padding:0; background:none; border:none; border-radius:50%; color:var(--text-primary); cursor:pointer; transition:background var(--transition), color var(--transition); }
+        .theme-toggle:hover { background:var(--primary-subtle); color:var(--primary); }
+        .theme-toggle svg { width:22px; height:22px; }
+        .theme-toggle .icon-sun { display:none; }
+        :root[data-theme="dark"] .theme-toggle .icon-sun { display:block; }
+        :root[data-theme="dark"] .theme-toggle .icon-moon { display:none; }
+
+        /* ===== 黑夜模式：深色变量 ===== */
+        :root { color-scheme: light; --primary-light:#eff6ff; --primary-subtle:rgba(37,99,235,0.08); }
+        :root[data-theme="dark"] {
+            color-scheme: dark;
+            --primary-light: rgba(59,130,246,0.16);
+            --primary-subtle: rgba(59,130,246,0.16);
+            --surface:#1e293b; --bg:#0f172a;
+            --text-primary:#e2e8f0; --text-secondary:#94a3b8; --text-tertiary:#64748b;
+            --border:#334155; --navbar-bg:rgba(15,23,42,0.8);
+            --shadow-sm:0 1px 3px rgba(0,0,0,0.4); --shadow-md:0 4px 16px rgba(0,0,0,0.5); --shadow-lg:0 12px 40px rgba(0,0,0,0.6);
+        }
+        :root[data-theme="dark"] .footer { background:#111827; }
+        :root[data-theme="dark"] .back-link { background:rgba(59,130,246,0.16); border-color:rgba(96,165,250,0.35); }
+        :root[data-theme="dark"] .back-link:hover { background:rgba(59,130,246,0.30); border-color:rgba(96,165,250,0.60); }
+        :root[data-theme="dark"] .error-msg, :root[data-theme="dark"] .article-error { background:rgba(239,68,68,0.12); border-color:rgba(239,68,68,0.35); color:#fca5a5; }
+        :root[data-theme="dark"] .reader-cover img { filter:brightness(0.8); }
+        :root[data-theme="dark"] .toast { background:var(--surface); }
+        :root[data-theme="dark"] .art-nav-btn { background:var(--bg); }
+        :root[data-theme="dark"] .series-chip { background:rgba(30,41,59,0.7); }
+        :root[data-theme="dark"] .series-chip .sc-count.done { background:rgba(239, 68, 68, 0.16); color:#fca5a5; }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="navbar-inner">
+            <a href="../.." class="navbar-brand">
+                <img src="/favicon.webp" alt="青翔未阔工作室" width="28" height="28" style="border-radius:5px;flex-shrink:0;">
+                <span class="brand-text"><b>未阔月刊</b><span>随心记录，定期成刊</span></span>
+            </a>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <button class="theme-toggle" id="themeToggle" type="button" aria-label="切换主题" title="切换主题">
+                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+                <a href="../.." class="back-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
+                    返回博客
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main">
+        <div class="container">
+            <div class="page-header">
+                <div class="page-head-row">
+                    <div class="page-head-left">
+                        <h1>
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                            未阔月刊
+                        </h1>
+                        <div class="tagline" id="magTagline">记录青翔未阔工作室的思考与博客</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+                        <button class="submit-btn" type="button" onclick="location.href='submit'">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            投稿
+                        </button>
+                        <a href="../account" class="account-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            个人中心
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="series-bar collapsed" id="seriesBar" style="display:none;">
+                <div class="series-head" id="seriesHead" role="button" aria-expanded="false" tabindex="0">
+                    <div class="series-title"><span class="dot"></span>各系列更新情况</div>
+                    <span class="series-toggle" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </span>
+                </div>
+                <div class="series-body">
+                    <div class="series-scroll" id="seriesScroll"></div>
+                </div>
+            </div>
+
+            <div id="magContainer">
+                <div class="loading-state"><span class="spinner"></span>正在加载月刊内容</div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-copy">2026 青翔未阔工作室</div>
+    </footer>
+
+    <!-- Reader modal -->
+    <div class="reader" id="reader">
+        <div class="reader-dialog" id="readerDialog">
+            <div class="reader-head">
+                <div class="reader-cover" id="readerCover"></div>
+                <button class="reader-close" id="readerClose" aria-label="关闭">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+                <div class="reader-titlewrap" id="readerTitlewrap"></div>
+            </div>
+            <div class="reader-body">
+                <aside class="reader-toc">
+                    <div class="toc-label">本期目录</div>
+                    <div class="toc-list" id="tocList"></div>
+                </aside>
+                <div class="reader-article">
+                    <div id="articleArea"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span id="toastText"></span></div>
+
+    <script>
+        var ISSUES_URL = 'issues.json';
+        var DATA = null;
+        var currentIssue = null;   // issue object
+        var currentArtIdx = 0;     // index within issue.articles
+        var articleCache = {};     // key: issueId + '/' + slug -> article json
+
+        function esc(t) { var d = document.createElement('div'); d.textContent = t == null ? '' : t; return d.innerHTML; }
+        function fmtDate(s) {
+            var m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (!m) return s;
+            return m[1] + '年' + Number(m[2]) + '月' + Number(m[3]) + '日';
+        }
+
+        // ===== 解密 Token (AES-GCM)，与画廊一致，用于 Qxwk-Files 仓库访问 =====
+        var _EK = [[205,62,238,119,105,60,86,111,196,76,254,171,91,219,140,137,205,39,69,166,217,228,90,72,198,16,10,234,129,136,136,162,188,216,48,149,117,188,15,182,162,137,212,147,109,174,32,58,30,90,135,219,125,253,57,79],[36,194,187,194,229,146,123,65,85,203,27,71],[255,181,60,250,211,171,130,22,51,225,180,74,21,115,162,72]];
+        var _DK = 'qxwk-sails-2026';
+        var GITHUB_TOKEN = '';
+
+        async function decryptToken() {
+            if (typeof crypto === 'undefined' || !crypto.subtle || !_EK.length || !_DK) return false;
+            try {
+                var keyMaterial = await crypto.subtle.importKey('raw', new TextEncoder().encode(_DK), 'PBKDF2', false, ['deriveKey']);
+                var key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: new Uint8Array(_EK[2]), iterations: 100000, hash: 'SHA-256' }, keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+                var plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: new Uint8Array(_EK[1]) }, key, new Uint8Array(_EK[0]));
+                GITHUB_TOKEN = new TextDecoder().decode(plain);
+                return true;
+            } catch (e) { return false; }
+        }
+
+        function repoApiBase() {
+            var r = DATA.repo || {};
+            return 'https://api.github.com/repos/' + r.owner + '/' + r.repo + '/contents/' + (r.path ? r.path + '/' : '');
+        }
+        function repoRef() { return (DATA.repo || {}).branch || 'main'; }
+        function authHeaders(extra) {
+            var h = extra || {};
+            if (GITHUB_TOKEN) h['Authorization'] = 'token ' + GITHUB_TOKEN;
+            return h;
+        }
+        function rawBase() {
+            var r = DATA.repo || {};
+            return 'https://raw.githubusercontent.com/' + r.owner + '/' + r.repo + '/' + r.branch + '/' + (r.path ? r.path + '/' : '');
+        }
+        function articleRawUrl(issue, article) {
+            if (!issue || !article) return '';
+            return rawBase() + encodeURIComponent(issue.id) + '/' + encodeURIComponent(article.slug) + '.json';
+        }
+        function coverRawUrl(issue) {
+            if (!issue || !issue.cover) return '';
+            return rawBase() + encodeURIComponent(issue.id) + '/' + encodeURIComponent(issue.cover);
+        }
+
+        // 保留兜底：若某资源显式写成完整 http(s) URL 则直用
+        function isHttpUrl(s) { return /^https?:\/\//i.test(String(s || '')); }
+
+        // 封面加载失败时隐藏 img，露出容器背景，避免裂图
+        function coverFallback(el) { if (el) el.style.opacity = '0'; }
+
+        // 宽松 JSON 解析：容忍尾部逗号 (arr/obj)、行/块注释；否则直接走原生 JSON.parse
+        // 仅在原生 JSON.parse 失败时启用，避免无谓开销
+        function parseJsonLoose(text) {
+            try { return JSON.parse(text); } catch (_) {}
+            // 去注释
+            var out = '';
+            var inStr = false, strCh = '', escape = false, i = 0, n = text.length;
+            while (i < n) {
+                var c = text.charAt(i);
+                if (inStr) {
+                    out += c;
+                    if (escape) escape = false;
+                    else if (c === '\\') escape = true;
+                    else if (c === strCh) inStr = false;
+                    i++;
+                    continue;
+                }
+                if (c === '"' || c === "'") { inStr = true; strCh = c; out += c; i++; continue; }
+                if (c === '/' && i + 1 < n) {
+                    var nc = text.charAt(i + 1);
+                    if (nc === '/') { i += 2; while (i < n && text.charAt(i) !== '\n') i++; continue; }
+                    if (nc === '*') { i += 2; while (i + 1 < n && !(text.charAt(i) === '*' && text.charAt(i + 1) === '/')) i++; i += 2; continue; }
+                }
+                out += c; i++;
+            }
+            // 去尾部逗号：逗号后面紧跟 ] 或 }（中间允许空白/换行/注释已删）
+            var cleaned = out.replace(/,(\s*[\]\}])/g, '$1');
+            try { return JSON.parse(cleaned); }
+            catch (e) {
+                // 最后一线：只在尾部逗号失败场景补一次
+                throw e;
+            }
+        }
+        var ART_LS_KEY = 'qxwk-mag-articles-v2';
+        var ART_LS_MAX = 60;
+        var ART_LS_TTL = 1000 * 60 * 60 * 24 * 7; // 7 天
+        function _readLSCache() {
+            try { return JSON.parse(localStorage.getItem(ART_LS_KEY) || '{}'); }
+            catch (e) { return {}; }
+        }
+        function _writeLSCache(obj) {
+            try { localStorage.setItem(ART_LS_KEY, JSON.stringify(obj)); } catch (e) {}
+        }
+        function _getCachedArticle(key) {
+            var cache = _readLSCache();
+            var item = cache[key];
+            if (!item) return null;
+            if (Date.now() - item.ts > ART_LS_TTL) {
+                delete cache[key]; _writeLSCache(cache); return null;
+            }
+            return item.data;
+        }
+        function _setCachedArticle(key, data) {
+            var cache = _readLSCache();
+            cache[key] = { ts: Date.now(), data: data };
+            var keys = Object.keys(cache);
+            if (keys.length > ART_LS_MAX) {
+                keys.sort(function (a, b) { return cache[a].ts - cache[b].ts; });
+                for (var i = 0; i < keys.length - ART_LS_MAX; i++) delete cache[keys[i]];
+            }
+            _writeLSCache(cache);
+        }
+
+        // ===== raw 域名可用性探测：整会话只做一次。
+        // 在 hosts→loopback / PNA 环境中，raw.githubusercontent.com 预检 OPTIONS 会被挡，整页都不再尝试，
+        // 避免控制台错误刷屏与反复 350ms 延迟。
+        var _RAW_CHECK_RESULT = null; // 'ok' | 'bad'
+        var _RAW_CHECK_PROMISE = null;
+        function _probeRawAvailable() {
+            if (_RAW_CHECK_RESULT !== null) return Promise.resolve(_RAW_CHECK_RESULT);
+            if (_RAW_CHECK_PROMISE) return _RAW_CHECK_PROMISE;
+            _RAW_CHECK_PROMISE = Promise.race([
+                new Promise(function (res) { setTimeout(function () { res('timeout'); }, 1200); }),
+                fetch(rawBase() + 'issues.json', { method: 'HEAD', cache: 'force-cache', mode: 'cors' })
+                    .then(function () { return 'ok'; }, function () { return 'bad'; })
+            ]).then(function (v) {
+                _RAW_CHECK_RESULT = (v === 'ok') ? 'ok' : 'bad';
+                return _RAW_CHECK_RESULT;
+            });
+            return _RAW_CHECK_PROMISE;
+        }
+
+        // 带超时+失败兜底的 fetch：raw 快路优先（若探测可用），失败回落到 Contents API
+        async function _fetchFastOrFallback(rawUrl, contentsQuery, parseRaw, parseFallback) {
+            var status = _RAW_CHECK_RESULT; // 允许尚未探测
+            var canFast = !!rawUrl && status !== 'bad';
+
+            var settled = { done: false };
+            return new Promise(function (resolve, reject) {
+                var fastOK = false;
+                var slowTimer = null;
+                var slowStarted = false;
+                var slowDone = false;
+                var slowRejectErr = null;
+
+                function finish(ok, val) {
+                    if (settled.done) return;
+                    settled.done = true;
+                    if (slowTimer) clearTimeout(slowTimer);
+                    if (ok) resolve(val); else reject(val);
+                }
+
+                function startSlow() {
+                    if (slowStarted) return;
+                    slowStarted = true;
+                    var url = repoApiBase() + contentsQuery;
+                    fetch(url, { headers: authHeaders({ 'Accept': 'application/vnd.github.raw' }) }).then(function (r) {
+                        if (!r.ok) throw new Error('api ' + r.status);
+                        return parseFallback(r);
+                    }).then(function (v) {
+                        slowDone = true; finish(true, v);
+                    }, function (e) {
+                        slowDone = true; slowRejectErr = e;
+                        // 只有在快路明确失败/不启用时才立即抛；否则等快路确认
+                        if (!canFast || fastOK === false) finish(false, e);
+                    });
+                }
+
+                // 兜底 15s 超时，防止快路慢路都 forever
+                setTimeout(function () {
+                    if (settled.done) return;
+                    if (slowDone && slowRejectErr) finish(false, slowRejectErr);
+                    else if (slowDone) return;
+                    else finish(false, new Error('raw 与 Contents API 均请求失败 (timeout 15s)'));
+                }, 15000);
+
+                if (!canFast) {
+                    startSlow();
+                    return;
+                }
+
+                // 启动快路
+                fetch(rawUrl, { cache: 'force-cache', mode: 'cors' }).then(function (r) {
+                    if (!r.ok) throw new Error('fast ' + r.status);
+                    return parseRaw(r);
+                }).then(function (v) {
+                    fastOK = true;
+                    if (_RAW_CHECK_RESULT === null) _RAW_CHECK_RESULT = 'ok';
+                    finish(true, v);
+                }, function () {
+                    fastOK = false;
+                    _RAW_CHECK_RESULT = 'bad'; // 标记坏：后续直接走慢路
+                    // 若慢路还没启动，立刻启动
+                    startSlow();
+                    // 若慢路已失败，立刻抛
+                    if (slowDone && slowRejectErr) finish(false, slowRejectErr);
+                    // 若慢路还在跑，等慢路 settle
+                });
+
+                // 350ms 快路没成功，提前启动慢路赛跑
+                slowTimer = setTimeout(startSlow, 350);
+            });
+        }
+
+        var _coverCache = {}; // key: issue.id -> object url or http url
+        async function fetchCoverUrl(issue) {
+            if (!issue || !issue.cover) return '';
+            if (isHttpUrl(issue.cover)) return issue.cover;
+            if (_coverCache[issue.id]) return _coverCache[issue.id];
+
+            var raw = coverRawUrl(issue);
+            var blob;
+            try {
+                // 封面：先试 raw blob（带 CDN 缓存，最快），Contents API 兜底
+                var r = await _fetchFastOrFallback(
+                    raw,
+                    encodeURIComponent(issue.id) + '/' + encodeURIComponent(issue.cover) + '?ref=' + encodeURIComponent(repoRef()),
+                    function (res) { return res.blob(); },
+                    function (res) { return res.blob(); }
+                );
+                blob = r;
+            } catch (e) { return ''; }
+            var obj = URL.createObjectURL(blob);
+            _coverCache[issue.id] = obj;
+            return obj;
+        }
+
+        function applyCoverToImg(imgEl, issue) {
+            if (!imgEl) return;
+            imgEl.src = '';
+            imgEl.style.opacity = '';
+            // 先给快路 raw 直填 <img src>：<img> 不受 CORS 限制，能在大多数环境（含线上 Pages）秒开
+            if (!isHttpUrl(issue.cover)) {
+                imgEl.src = coverRawUrl(issue);
+                // 如果 650ms 后图片未加载完成（或已失败但浏览器吞了错误），再用 Contents API 兜底替换
+                var started = Date.now();
+                var replaced = false;
+                var tryFallback = function () {
+                    if (replaced) return;
+                    if (imgEl.complete) {
+                        var ok = imgEl.naturalWidth && imgEl.naturalWidth > 0;
+                        if (ok) return; // 已成功
+                    }
+                    replaced = true;
+                    fetchCoverUrl(issue).then(function (u) {
+                        if (!u) { coverFallback(imgEl); return; }
+                        imgEl.src = u;
+                    }, function () { coverFallback(imgEl); });
+                };
+                imgEl.addEventListener('error', function handler() {
+                    imgEl.removeEventListener('error', handler);
+                    tryFallback();
+                });
+                setTimeout(tryFallback, 650);
+            } else {
+                fetchCoverUrl(issue).then(function (u) {
+                    if (!u) { coverFallback(imgEl); return; }
+                    imgEl.src = u;
+                });
+            }
+        }
+
+        // 获取单篇文章 JSON：快路 raw（CDN 缓存）；失败/超时 → Contents API；命中 LS 缓存直接返回
+        async function fetchArticle(issue, article) {
+            if (!issue || !article) throw new Error('参数缺失');
+            var key = issue.id + '/' + article.slug;
+            if (articleCache[key]) return articleCache[key];
+            var cached = _getCachedArticle(key);
+            if (cached) {
+                articleCache[key] = cached;
+                return cached;
+            }
+            var raw = articleRawUrl(issue, article);
+            var json;
+            try {
+                var text = await _fetchFastOrFallback(
+                    raw,
+                    encodeURIComponent(issue.id) + '/' + encodeURIComponent(article.slug) + '.json?ref=' + encodeURIComponent(repoRef()),
+                    function (res) { return res.text(); },
+                    function (res) { return res.text(); }
+                );
+                json = parseJsonLoose(text);
+            } catch (e) {
+                // 最后一次尝试：直接 Contents API（独立路径、不受快路超时影响）
+                try {
+                    var u = repoApiBase() + encodeURIComponent(issue.id) + '/' + encodeURIComponent(article.slug) + '.json?ref=' + encodeURIComponent(repoRef());
+                    var r2 = await fetch(u, { headers: authHeaders({ 'Accept': 'application/vnd.github.raw' }) });
+                    if (!r2.ok) throw new Error('请求失败 (' + r2.status + ')');
+                    json = parseJsonLoose(await r2.text());
+                } catch (e2) {
+                    throw new Error(e2.message || '请求失败');
+                }
+            }
+            articleCache[key] = json;
+            _setCachedArticle(key, json);
+            return json;
+        }
+
+        // 打开某期阅读时，预加载前几篇文章（避免逐篇等）
+        function preloadArticles(issue, count) {
+            var arts = (issue && issue.articles) || [];
+            var n = Math.min(count || 3, arts.length);
+            for (var i = 0; i < n; i++) fetchArticle(issue, arts[i]).catch(function () {});
+        }
+
+        async function loadIssues() {
+            var container = document.getElementById('magContainer');
+            try {
+                var r = await fetch(ISSUES_URL, { cache: 'no-store' });
+                if (!r.ok) throw new Error('请求失败 (' + r.status + ')');
+                DATA = await r.json();
+
+                var mag = DATA.magazine || {};
+                document.getElementById('magTagline').textContent = mag.tagline || '';
+                document.title = (mag.name || '未阔月刊') + ' - 青翔未阔工作室';
+
+                var issues = DATA.issues || [];
+                if (!issues.length) {
+                    container.innerHTML = '<div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.3;margin-bottom:12px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><div>月刊暂无内容</div></div>';
+                    return;
+                }
+                renderMagazine(issues);
+
+                // 后台探测 raw 域名可达性（整会话缓存），避免点击文章时才反复触发预检错误
+                _probeRawAvailable().catch(function () {});
+            } catch (e) {
+                container.innerHTML = '<div class="error-msg">加载失败：' + esc(e.message) + '</div><div class="empty-state">请检查网络连接或稍后重试。</div>';
+            }
+        }
+
+        function renderMagazine(issues) {
+            var container = document.getElementById('magContainer');
+            var latest = issues[0];
+            var past = issues.slice(1);
+            var html = '';
+
+            // ===== Featured =====
+            var arts = latest.articles || [];
+            html += '<div class="featured" onclick="openReader(0)">';
+            html += '  <div class="featured-cover">';
+            html += '    <span class="issue-badge">最新一期 · 第' + esc(latest.number) + '期</span>';
+            html += '    <img alt="' + esc(latest.title) + '封面" loading="lazy" onerror="coverFallback(this)" data-cover-issue="0">';
+            html += '  </div>';
+            html += '  <div class="featured-content">';
+            html += '    <div class="meta"><span>' + fmtDate(latest.date) + '</span><span class="dot"></span><span>第' + esc(latest.number) + '期</span></div>';
+            html += '    <div class="art-count">共 ' + arts.length + ' 篇</div>';
+            html += '    <h2>' + esc(latest.title) + '</h2>';
+            html += '    <div class="summary">' + esc(latest.summary) + '</div>';
+            html += '    <button class="read-btn">阅读本期 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>';
+            html += '  </div>';
+            html += '</div>';
+
+            // ===== Past issues =====
+            if (past.length) {
+                html += '<div class="section-label"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>往期回看<span class="line"></span></div>';
+                html += '<div class="issues-grid">';
+                for (var i = 0; i < past.length; i++) {
+                    var is = past[i];
+                    var idx = i + 1;
+                    var ac = (is.articles || []).length;
+                    html += '<div class="issue-card" onclick="openReader(' + idx + ')">';
+                    html += '  <div class="card-cover">';
+                    html += '    <span class="card-num">第' + esc(is.number) + '期</span>';
+                    html += '    <img alt="' + esc(is.title) + '封面" loading="lazy" onerror="coverFallback(this)" data-cover-issue="' + idx + '">';
+                    html += '  </div>';
+                    html += '  <div class="card-body">';
+                    html += '    <div class="card-date">' + fmtDate(is.date) + ' · 共 ' + ac + ' 篇</div>';
+                    html += '    <div class="card-title">' + esc(is.title) + '</div>';
+                    html += '    <div class="card-summary">' + esc(is.summary) + '</div>';
+                    html += '  </div>';
+                    html += '</div>';
+                }
+                html += '</div>';
+            }
+
+            container.innerHTML = html;
+
+            // 异步填充封面（走 Contents API blob → object url）
+            for (var j = 0; j < issues.length; j++) {
+                var imgs = container.querySelectorAll('img[data-cover-issue="' + j + '"]');
+                for (var k = 0; k < imgs.length; k++) applyCoverToImg(imgs[k], issues[j]);
+            }
+        }
+
+        // ===== Reader =====
+        function openReader(issueIndex) {
+            var issue = DATA.issues[issueIndex];
+            if (!issue) return;
+            currentIssue = issue;
+            currentArtIdx = 0;
+
+            document.getElementById('readerCover').innerHTML = '<img alt="' + esc(issue.title) + '封面" onerror="coverFallback(this)" id="readerCoverImg">';
+            document.getElementById('readerTitlewrap').innerHTML =
+                '<div class="meta"><span>第' + esc(issue.number) + '期</span><span>·</span><span>' + fmtDate(issue.date) + '</span></div>' +
+                '<h2>' + esc(issue.title) + '</h2>';
+
+            // 构建目录
+            var arts = issue.articles || [];
+            var tocHtml = '';
+            for (var i = 0; i < arts.length; i++) {
+                tocHtml += '<button class="toc-item" data-idx="' + i + '" onclick="selectArticle(' + i + ')">' +
+                    '<span class="toc-num">' + (i + 1) + '</span>' + esc(arts[i].title) + '</button>';
+            }
+            document.getElementById('tocList').innerHTML = tocHtml;
+
+            document.getElementById('reader').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            document.getElementById('reader').scrollTop = 0;
+
+            // 弹窗封面异步加载
+            applyCoverToImg(document.getElementById('readerCoverImg'), issue);
+
+            // 预读前 3 篇文章，目录点击不再等
+            preloadArticles(issue, 3);
+
+            if (arts.length) selectArticle(0);
+            else document.getElementById('articleArea').innerHTML = '<div class="article-loading">本期暂无文章</div>';
+        }
+
+        function selectArticle(idx) {
+            if (!currentIssue) return;
+            var arts = currentIssue.articles || [];
+            if (idx < 0 || idx >= arts.length) return;
+            currentArtIdx = idx;
+
+            // 高亮目录项
+            var items = document.getElementById('tocList').querySelectorAll('.toc-item');
+            for (var i = 0; i < items.length; i++) {
+                items[i].classList.toggle('active', Number(items[i].dataset.idx) === idx);
+            }
+
+            var area = document.getElementById('articleArea');
+            var article = arts[idx];
+            area.innerHTML = '<div class="article-loading"><span class="spinner"></span>正在加载文章</div>';
+
+            fetchArticle(currentIssue, article).then(function (json) {
+                renderArticle(article, json, idx, arts.length);
+            }).catch(function (e) {
+                var url = articleRawUrl(currentIssue, article);
+                var tip = url ? ('预期路径：<br><code style="word-break:break-all;">' + esc(url) + '</code>') : '';
+                area.innerHTML = '<div class="article-error">文章加载失败：' + esc(e.message) + '<br>可能尚未上传至仓库。' + tip + '</div>';
+                renderNav(idx, arts.length);
+            });
+        }
+
+        function renderArticle(article, json, idx, total) {
+            var area = document.getElementById('articleArea');
+            var title = (json && json.title) ? json.title : article.title;
+            var paragraphs = (json && Array.isArray(json.paragraphs)) ? json.paragraphs : (json && Array.isArray(json.body) ? json.body : []);
+            var author = (json && json.author) ? json.author : '';
+            var metaParts = [];
+            if (author) metaParts.push('文 / ' + esc(author));
+            metaParts.push(esc(currentIssue.title));
+            metaParts.push('第' + (idx + 1) + ' / ' + total + ' 篇');
+            var html = '<div class="article-head"><h3>' + esc(title) + '</h3>' +
+                '<div class="art-meta">' + metaParts.join(' · ') + '</div></div>';
+            html += '<div class="article-content">';
+            if (paragraphs.length) {
+                for (var i = 0; i < paragraphs.length; i++) html += '<p>' + esc(paragraphs[i]) + '</p>';
+            } else {
+                html += '<p style="color:var(--text-tertiary);">（暂无正文）</p>';
+            }
+            html += '</div>';
+            area.innerHTML = html;
+            renderNav(idx, total);
+            // 滚到文章顶部
+            document.getElementById('reader').scrollTop = 0;
+        }
+
+        function renderNav(idx, total) {
+            var area = document.getElementById('articleArea');
+            var arts = currentIssue.articles;
+            var prev = idx > 0 ? arts[idx - 1] : null;
+            var next = idx < total - 1 ? arts[idx + 1] : null;
+            var html = '<div class="article-nav">';
+            html += '<button class="art-nav-btn" ' + (prev ? '' : 'disabled') + ' onclick="selectArticle(' + (idx - 1) + ')">' +
+                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>' +
+                '<span class="lbl">' + (prev ? esc(prev.title) : '已是第一篇') + '</span></button>';
+            html += '<button class="art-nav-btn" ' + (next ? '' : 'disabled') + ' onclick="selectArticle(' + (idx + 1) + ')">' +
+                '<span class="lbl">' + (next ? esc(next.title) : '已是最后一篇') + '</span>' +
+                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>';
+            html += '</div>';
+            area.insertAdjacentHTML('beforeend', html);
+        }
+
+        function closeReader() {
+            document.getElementById('reader').classList.remove('active');
+            document.body.style.overflow = '';
+            currentIssue = null;
+        }
+
+        // ===== Toast =====
+        function showToast(msg) {
+            var t = document.getElementById('toast');
+            document.getElementById('toastText').textContent = msg;
+            t.classList.add('show');
+            clearTimeout(t._timer);
+            t._timer = setTimeout(function () { t.classList.remove('show'); }, 2200);
+        }
+
+        document.getElementById('readerClose').addEventListener('click', closeReader);
+        document.getElementById('reader').addEventListener('click', function (e) {
+            if (e.target === this) closeReader();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (!document.getElementById('reader').classList.contains('active')) return;
+            if (e.key === 'Escape') closeReader();
+            if ((e.key === 'ArrowLeft') && currentIssue && currentArtIdx > 0) selectArticle(currentArtIdx - 1);
+            if ((e.key === 'ArrowRight') && currentIssue) {
+                var arts = currentIssue.articles || [];
+                if (currentArtIdx < arts.length - 1) selectArticle(currentArtIdx + 1);
+            }
+        });
+
+        // 先解密 token（用于后续文章请求），再加载索引
+        decryptToken().then(function () { loadIssues(); loadSeries(); });
+
+        // 加载系列卡片（同目录 series.json）
+        async function loadSeries() {
+            try {
+                var r = await fetch('series.json', { cache: 'force-cache' });
+                if (!r.ok) return;
+                var data = JSON.parse(await r.text());
+                if (!data || !data.series || !data.series.length) return;
+                renderSeries(data.series);
+            } catch(e) { /* series.json 缺失/解析失败则静默隐藏 */ }
+        }
+        function renderSeries(list) {
+            var bar = document.getElementById('seriesBar');
+            var box = document.getElementById('seriesScroll');
+            if (!bar || !box) return;
+            box.innerHTML = '';
+            list.forEach(function (s) {
+                var chip = document.createElement('div');
+                chip.className = 'series-chip';
+                var label = s.done ? '完结于' : '更新至';
+                chip.title = s.name + ' · ' + label + ' ' + s.count + ' 期 · 最近：' + s.lastIssue;
+                var countCls = 'sc-count' + (s.done ? ' done' : '');
+                var countText = s.done ? ('完结于' + s.count + '期') : ('更新至' + s.count + '期');
+                chip.innerHTML =
+                    '<span class="sc-icon">' + (s.icon || '📖') + '</span>' +
+                    '<div class="sc-info">' +
+                        '<div class="sc-name">' + esc(s.name) + '</div>' +
+                        '<div class="sc-meta">' + esc(s.lastIssue || '') + (s.lastTitle ? ' · ' + esc(s.lastTitle) : '') + '</div>' +
+                    '</div>' +
+                    '<span class="' + countCls + '">' + countText + '</span>';
+                box.appendChild(chip);
+            });
+            bar.style.display = '';
+            // 折叠交互
+            var head = document.getElementById('seriesHead');
+            function toggle() {
+                var isCollapsed = bar.classList.toggle('collapsed');
+                head.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+            }
+            head.addEventListener('click', toggle);
+            head.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+            });
+        }
+    </script>
+</body>
+</html>

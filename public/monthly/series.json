@@ -1,0 +1,79 @@
+{
+  "series": [
+    {
+      "name": "尖塔小课堂",
+      "icon": "🗼",
+      "count": 1,
+      "lastIssue": "2024-05",
+      "lastTitle": "战士的系统认知"
+    },
+    {
+      "name": "卡丘大食堂",
+      "icon": "🍳",
+      "count": 1,
+      "lastIssue": "2024-04",
+      "lastTitle": "链接世界的崩溃",
+      "done": true
+    },
+    {
+      "name": "经天纬地谈科技",
+      "icon": "🚀",
+      "count": 1,
+      "lastIssue": "2024-04",
+      "lastTitle": "序言&恒星"
+    },
+    {
+      "name": "煦言",
+      "icon": "💬",
+      "count": 6,
+      "lastIssue": "2024-06",
+      "lastTitle": "炉石中的无敌赌狗"
+    },
+    {
+      "name": "篝火夜话",
+      "icon": "🔥",
+      "count": 8,
+      "lastIssue": "2024-05",
+      "lastTitle": "谈死亡"
+    },
+    {
+      "name": "梦月之兮小说角",
+      "icon": "🌙",
+      "count": 3,
+      "lastIssue": "2024-01",
+      "lastTitle": "帕朵·菲利斯",
+      "done": true
+    },
+    {
+      "name": "野渡无人周自珩小说角",
+      "icon": "🌊",
+      "count": 2,
+      "lastIssue": "2024-01",
+      "lastTitle": "这场歌剧，名为罪人舞步旋",
+      "done": true
+    },
+    {
+      "name": "舌尖上的MC",
+      "icon": "🍜",
+      "count": 2,
+      "lastIssue": "2023-12",
+      "lastTitle": "第二集 团圆"
+    },
+    {
+      "name": "泰拉看点",
+      "icon": "🏰",
+      "count": 2,
+      "lastIssue": "2024-01",
+      "lastTitle": "我曾经与老群主的爱恨情仇",
+      "done": true
+    },
+    {
+      "name": "七圣研究所",
+      "icon": "♟️",
+      "count": 21,
+      "lastIssue": "2024-06",
+      "lastTitle": "锐评三体卡牌",
+      "done": true
+    }
+  ]
+}

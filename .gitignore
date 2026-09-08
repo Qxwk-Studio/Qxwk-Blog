@@ -1,0 +1,7 @@
+# 依赖与本地文件
+node_modules/
+.wrangler/
+.dev.vars
+
+# wrangler 自动生成的文件
+wrangler.jsonc
