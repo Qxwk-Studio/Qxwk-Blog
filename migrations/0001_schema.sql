@@ -28,6 +28,8 @@ CREATE TABLE IF NOT EXISTS bg_blogs (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,   -- bid（博客 id，前端展示为纯数字）
   user_id     INTEGER NOT NULL,                    -- 作者（映射到本地 users）
   content     TEXT NOT NULL,                       -- 正文
+  topics      TEXT NOT NULL DEFAULT '[]',          -- 话题列表（JSON 数组，#话题# 提取）
+  mentions    TEXT NOT NULL DEFAULT '[]',          -- 提及列表（JSON 数组，@昵称 提取）
   featured    INTEGER NOT NULL DEFAULT 0,          -- 1 = 入选未阔月刊
   is_deleted  INTEGER NOT NULL DEFAULT 0,          -- 1 = 已删除（软删除，保留互动数据）
   likes_count INTEGER NOT NULL DEFAULT 0,          -- 点赞数（每次点赞 +1）

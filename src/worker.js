@@ -14,6 +14,30 @@ async function getViewer(DB, request) {
     : { userId: 0, isAdmin: false };
 }
 
+// 从正文提取话题（#话题#，尾 # 可省）与提及（@昵称），各去重并限制数量
+function extractTopics(content) {
+  const set = {};
+  const re = /#([^#\s]{1,30})#?/g;
+  let m;
+  while ((m = re.exec(content))) {
+    const t = m[1].trim();
+    if (t && !set[t]) set[t] = true;
+  }
+  return Object.keys(set).slice(0, 10);
+}
+function extractMentions(content) {
+  const set = {};
+  const re = /@([\u4e00-\u9fa5A-Za-z0-9_\-]{1,20})/g;
+  let m;
+  while ((m = re.exec(content))) {
+    if (!set[m[1]]) set[m[1]] = true;
+  }
+  return Object.keys(set).slice(0, 10);
+}
+function parseJsonArray(s) {
+  try { const v = JSON.parse(s || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
+}
+
 async function handleApi(request, env) {
   const url = new URL(request.url);
   const path = url.pathname;
@@ -111,29 +135,42 @@ async function handleApi(request, env) {
     const content = String(body.content || '').trim();
     if (!content) return error('内容不能为空');
     if (content.length > 500) return error('内容过长（最多 500 字）');
-    const r = await DB.prepare('INSERT INTO bg_blogs (user_id, content) VALUES (?, ?)').bind(v.id, content).run();
+    const topics = JSON.stringify(extractTopics(content));
+    const mentions = JSON.stringify(extractMentions(content));
+    const r = await DB.prepare(
+      'INSERT INTO bg_blogs (user_id, content, topics, mentions) VALUES (?, ?, ?, ?)'
+    ).bind(v.id, content, topics, mentions).run();
     return json({ id: r.meta.last_row_id }, 201);
   }
 
-  // GET /api/blogs（公开：博客流，倒序游标分页；before 为上一页最小 id，limit 默认 20 最大 50）
+  // GET /api/blogs（公开：博客流，倒序游标分页；before 为上一页最小 id，limit 默认 20 最大 50；topic 话题过滤）
   if (method === 'GET' && path === '/api/blogs') {
     const before = Number(url.searchParams.get('before') || 0);
     const limit = Math.min(Math.max(Number(url.searchParams.get('limit') || 20), 1), 50);
+    const topic = String(url.searchParams.get('topic') || '').trim().slice(0, 30);
     const v = await getViewer(DB, request);
     const select =
-      `SELECT b.id, b.user_id, b.content, b.featured, b.likes_count, b.created_at, b.updated_at,
+      `SELECT b.id, b.user_id, b.content, b.topics, b.mentions, b.featured, b.likes_count, b.created_at, b.updated_at,
               u.nickname, u.color
        FROM bg_blogs b JOIN users u ON b.user_id = u.id
-       WHERE b.is_deleted = 0`;
-    const rows = before > 0
-      ? await DB.prepare(`${select} AND b.id < ? ORDER BY b.id DESC LIMIT ?`).bind(before, limit).all()
-      : await DB.prepare(`${select} ORDER BY b.id DESC LIMIT ?`).bind(limit).all();
+       WHERE b.is_deleted = 0` +
+      (topic ? " AND EXISTS (SELECT 1 FROM json_each(b.topics) WHERE json_each.value = ?)" : '');
+    const params = [];
+    if (topic) params.push(topic);
+    if (before > 0) params.push(before);
+    params.push(limit);
+    const sql = before > 0
+      ? `${select} AND b.id < ? ORDER BY b.id DESC LIMIT ?`
+      : `${select} ORDER BY b.id DESC LIMIT ?`;
+    const rows = await DB.prepare(sql).bind(...params).all();
     const blogs = rows.results.map((r) => ({
       bid: r.id,
       uid: r.user_id,
       nickname: r.nickname,
       color: r.color,
       content: r.content,
+      topics: parseJsonArray(r.topics),
+      mentions: parseJsonArray(r.mentions),
       featured: !!r.featured,
       likes_count: r.likes_count,
       created_at: r.created_at,
@@ -145,6 +182,17 @@ async function handleApi(request, env) {
 
   const blogMatch = path.match(/^\/api\/blogs\/(\d+)$/);
   const likeMatch = path.match(/^\/api\/blogs\/(\d+)\/like$/);
+
+  // GET /api/users/search?q=（公开：模糊查用户昵称，供 @ 提及输入提示）
+  if (method === 'GET' && path === '/api/users/search') {
+    const q = String(url.searchParams.get('q') || '').trim().slice(0, 20);
+    if (!q) return json({ users: [] });
+    const like = '%' + q.replace(/[\\%_]/g, '\\$&') + '%';
+    const rows = await DB.prepare(
+      "SELECT id, nickname, color FROM users WHERE nickname LIKE ? ESCAPE '\\' ORDER BY id ASC LIMIT 8"
+    ).bind(like).all();
+    return json({ users: rows.results });
+  }
 
   // POST /api/blogs/:id/like（公开：点赞 +1；防重复由前端在刷新周期内置灰控制）
   if (method === 'POST' && likeMatch) {
@@ -167,7 +215,11 @@ async function handleApi(request, env) {
     const content = String(body.content || '').trim();
     if (!content) return error('内容不能为空');
     if (content.length > 500) return error('内容过长（最多 500 字）');
-    await DB.prepare('UPDATE bg_blogs SET content = ?, updated_at = datetime("now") WHERE id = ?').bind(content, id).run();
+    const topics = JSON.stringify(extractTopics(content));
+    const mentions = JSON.stringify(extractMentions(content));
+    await DB.prepare(
+      'UPDATE bg_blogs SET content = ?, topics = ?, mentions = ?, updated_at = datetime("now") WHERE id = ?'
+    ).bind(content, topics, mentions, id).run();
     return json({ ok: true });
   }
 

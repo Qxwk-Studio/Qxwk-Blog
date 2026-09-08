@@ -84,7 +84,7 @@
 
         /* 中：发动态输入框 */
         .compose-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
-            padding: 16px 18px 14px; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); }
+            padding: 16px 18px 14px; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); position: relative; }
         .compose-row { display: flex; align-items: flex-start; gap: 12px; }
         .compose-input { flex: 1; min-height: 78px; padding: 10px 14px; background: var(--bg);
             border: 1px solid var(--border); border-radius: var(--radius-sm); font: inherit; font-size: 0.92rem;
@@ -132,6 +132,27 @@
         .feed-bid { margin-top: 2px; font-size: 0.72rem; color: var(--text-tertiary); }
         .feed-time { flex-shrink: 0; font-size: 0.74rem; color: var(--text-tertiary); }
         .feed-text { margin-top: 12px; padding: 0 14px; font-size: 0.9rem; color: var(--text-primary); line-height: 1.7; }
+        .blog-tag { color: var(--primary); cursor: pointer; font-weight: 500; }
+        .blog-tag:hover { text-decoration: underline; }
+        .blog-mention { color: var(--secondary); font-weight: 500; }
+        .feed-topicbar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 10px 14px;
+            background: rgba(37,99,235,0.08); border: 1px solid rgba(147,197,253,0.35); border-radius: var(--radius-md);
+            font-size: 0.84rem; color: var(--text-primary); }
+        .feed-topicbar b { color: var(--primary); }
+        .feed-topicbar button { margin-left: auto; border: none; background: none; color: var(--text-secondary);
+            cursor: pointer; font: inherit; font-size: 0.8rem; padding: 2px 10px; border-radius: 40px; }
+        .feed-topicbar button:hover { color: var(--primary); background: rgba(37,99,235,0.1); }
+        .feed-empty-note { text-align: center; padding: 36px 18px; background: var(--surface);
+            border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-tertiary); font-size: 0.86rem; }
+        .at-drop { position: absolute; top: 100px; left: 12px; right: 12px; z-index: 30; display: none;
+            background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-md); padding: 4px; }
+        .at-drop.show { display: block; }
+        .at-item { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 8px 10px;
+            border: none; background: none; border-radius: 6px; color: var(--text-primary); font: inherit;
+            font-size: 0.86rem; cursor: pointer; }
+        .at-item:hover { background: var(--primary-subtle); color: var(--primary); }
+        .at-item .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
         .feed-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
         .feed-action { display: inline-flex; align-items: center; gap: 5px; background: none; border: none;
             color: var(--text-secondary); font: inherit; font-size: 0.8rem; cursor: pointer; padding: 3px 6px;
@@ -309,10 +330,10 @@
                         </div>
                         <div class="compose-foot">
                             <div class="compose-tools">
-                                <button class="tool-btn" type="button" title="话题" aria-label="话题" onclick="showToast('话题功能即将上线')">
+                                <button class="tool-btn" type="button" title="话题" aria-label="话题" onclick="insertMarker('#话题#')">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
                                 </button>
-                                <button class="tool-btn" type="button" title="提及" aria-label="提及" onclick="showToast('提及功能即将上线')">
+                                <button class="tool-btn" type="button" title="提及" aria-label="提及" onclick="insertMarker('@')">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/></svg>
                                 </button>
                             </div>
@@ -321,6 +342,7 @@
                                 <span id="composeSubmitLabel">发布</span>
                             </button>
                         </div>
+                        <div class="at-drop" id="atDrop"></div>
                     </div>
 
                     <div class="feed-section" id="feedSection"></div>
@@ -470,7 +492,7 @@
                 '</div>' +
                 '<span class="feed-time">' + fmtBlogTime(b.created_at) + '</span>' +
             '</div>' +
-            '<div class="feed-text">' + esc(b.content) + '</div>' +
+            '<div class="feed-text">' + highlightContent(b.content) + '</div>' +
             '<div class="feed-actions">' +
                 left +
                 '<div class="feed-actions-right">' +
@@ -480,6 +502,21 @@
             '</div>' +
         '</div>';
     }
+    // 正文高亮：#话题#（可点击过滤）与 @昵称
+    function highlightContent(text) {
+        var h = esc(text);
+        h = h.replace(/#([^#\s]{1,30})#?/g, function (m, p1) {
+            return '<span class="blog-tag" data-topic="' + p1.replace(/"/g, '') + '">' + m + '</span>';
+        });
+        h = h.replace(/@([\u4e00-\u9fa5A-Za-z0-9_\-]{1,20})/g, '<span class="blog-mention">@$1</span>');
+        return h;
+    }
+    var currentTopic = '';
+    function topicBarHtml() {
+        return '<div class="feed-topicbar">正在查看话题：<b>#' + esc(currentTopic) + '#</b>' +
+            '<button type="button" onclick="clearTopic()">清除</button></div>';
+    }
+    function clearTopic() { currentTopic = ''; loadBlogs(); }
     // 无博客时的默认欢迎卡片（占位演示）
     function defaultItemHtml() {
         return feedItemHtml({
@@ -489,14 +526,21 @@
         });
     }
     function loadBlogs() {
-        blogFetch('/api/blogs')
+        var url = '/api/blogs' + (currentTopic ? '?topic=' + encodeURIComponent(currentTopic) : '');
+        blogFetch(url)
             .then(function (r) { if (!r.ok) throw new Error('加载失败'); return r.json(); })
             .then(function (d) {
                 var blogs = d.blogs || [];
-                document.getElementById('feedSection').innerHTML =
-                    blogs.length ? blogs.map(feedItemHtml).join('') : defaultItemHtml();
+                var html = currentTopic ? topicBarHtml() : '';
+                html += blogs.length
+                    ? blogs.map(feedItemHtml).join('')
+                    : (currentTopic ? '<div class="feed-empty-note">该话题下还没有博客</div>' : defaultItemHtml());
+                document.getElementById('feedSection').innerHTML = html;
             })
-            .catch(function () { document.getElementById('feedSection').innerHTML = defaultItemHtml(); });
+            .catch(function () {
+                document.getElementById('feedSection').innerHTML =
+                    (currentTopic ? topicBarHtml() : '') + '<div class="feed-empty-note">加载失败</div>';
+            });
     }
 
     // ===== 卡片交互（事件委托） =====
@@ -510,6 +554,14 @@
         if (!item) return;
         var id = Number(item.dataset.id);
         var isDemo = item.dataset.demo === '1';
+
+        // 点击 #话题 → 按话题过滤博客流
+        var tagEl = e.target.closest('.blog-tag');
+        if (tagEl) {
+            currentTopic = tagEl.getAttribute('data-topic');
+            loadBlogs();
+            return;
+        }
 
         // 三个点菜单
         if (e.target.closest('.feed-dots')) {
@@ -619,6 +671,78 @@
             })
             .catch(function () { card.innerHTML = notLoggedInHtml(); });
     }
+
+    // ===== @ 提及：输入时弹出用户搜索下拉 =====
+    var atTimer = null;
+    var atStart = -1;
+    var composeInput = document.getElementById('composeInput');
+    var atDrop = document.getElementById('atDrop');
+    // 工具栏按钮插入：#话题#（光标落在中间）或 @（触发搜索下拉）
+    function insertMarker(marker) {
+        var start = composeInput.selectionStart == null ? composeInput.value.length : composeInput.selectionStart;
+        var end = composeInput.selectionEnd == null ? start : composeInput.selectionEnd;
+        composeInput.value = composeInput.value.slice(0, start) + marker + composeInput.value.slice(end);
+        composeInput.focus();
+        if (marker === '@') {
+            try { composeInput.setSelectionRange(start + 1, start + 1); } catch (err) {}
+            composeInput.dispatchEvent(new Event('input', { bubbles: true }));
+        } else {
+            try { composeInput.setSelectionRange(start + 1, start + 1); } catch (err) {}
+        }
+    }
+    function hideAtDrop() { if (atDrop) atDrop.classList.remove('show'); }
+    function showAtCandidates(word) {
+        blogFetch('/api/users/search?q=' + encodeURIComponent(word))
+            .then(function (r) { if (!r.ok) throw new Error(''); return r.json(); })
+            .then(function (d) {
+                var users = d.users || [];
+                if (!users.length) { hideAtDrop(); return; }
+                var html = '';
+                for (var i = 0; i < users.length; i++) {
+                    html += '<button class="at-item" type="button" data-nick="' + esc(users[i].nickname) + '">' +
+                        '<span class="dot" style="background:' + esc(users[i].color || '#94a3b8') + ';"></span>' +
+                        esc(users[i].nickname) + '</button>';
+                }
+                atDrop.innerHTML = html;
+                atDrop.classList.add('show');
+            })
+            .catch(function () { hideAtDrop(); });
+    }
+    composeInput.addEventListener('input', function () {
+        var val = composeInput.value;
+        var caret = composeInput.selectionStart == null ? val.length : composeInput.selectionStart;
+        var idx = -1;
+        for (var i = caret - 1; i >= 0; i--) { if (val[i] === '@') { idx = i; break; } }
+        if (idx >= 0) {
+            var word = val.slice(idx + 1, caret);
+            if (word.length >= 1 && /^[\u4e00-\u9fa5A-Za-z0-9_\-]{1,20}$/.test(word)) {
+                atStart = idx;
+                clearTimeout(atTimer);
+                atTimer = setTimeout(function () { showAtCandidates(word); }, 250);
+                return;
+            }
+        }
+        hideAtDrop();
+    });
+    composeInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') hideAtDrop();
+    });
+    atDrop.addEventListener('click', function (e) {
+        var item = e.target.closest('.at-item');
+        if (!item) return;
+        var nick = item.getAttribute('data-nick');
+        var val = composeInput.value;
+        var caret = composeInput.selectionStart == null ? val.length : composeInput.selectionStart;
+        if (atStart < 0) atStart = caret;
+        composeInput.value = val.slice(0, atStart) + '@' + nick + ' ' + val.slice(caret);
+        var pos = atStart + nick.length + 2;
+        composeInput.focus();
+        try { composeInput.setSelectionRange(pos, pos); } catch (err) {}
+        hideAtDrop();
+    });
+    document.addEventListener('click', function (e) {
+        if (atDrop && !atDrop.contains(e.target) && e.target !== composeInput) hideAtDrop();
+    });
 
     renderProfile();
     loadBlogs();
