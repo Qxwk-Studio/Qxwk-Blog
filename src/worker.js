@@ -165,12 +165,14 @@ async function handleApi(request, env) {
     const params = [];
     if (topic) params.push(topic);
     if (before > 0) params.push(before);
-    params.push(limit);
+    params.push(limit + 1); // 多取 1 条用于判断是否还有更多
     const sql = before > 0
       ? `${select} AND b.id < ? ORDER BY b.id DESC LIMIT ?`
       : `${select} ORDER BY b.id DESC LIMIT ?`;
     const rows = await DB.prepare(sql).bind(...params).all();
-    const blogs = rows.results.map((r) => ({
+    const hasMore = rows.results.length > limit;
+    const page = rows.results.slice(0, limit);
+    const blogs = page.map((r) => ({
       bid: r.id,
       uid: r.user_id,
       nickname: r.nickname,
@@ -185,7 +187,7 @@ async function handleApi(request, env) {
       updated_at: r.updated_at,
       is_owner: v.userId > 0 && r.user_id === v.userId,
     }));
-    return json({ blogs });
+    return json({ blogs, hasMore });
   }
 
   const blogMatch = path.match(/^\/api\/blogs\/(\d+)$/);

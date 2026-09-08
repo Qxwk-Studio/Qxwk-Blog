@@ -136,6 +136,10 @@
         .feed-user { flex: 1; min-width: 0; }
         .feed-name { font-size: 0.9rem; font-weight: 700; }
         .feed-bid { margin-top: 2px; font-size: 0.72rem; color: var(--text-tertiary); }
+        .feed-badge { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px;
+            font-size: 0.66rem; font-weight: 600; color: var(--secondary);
+            background: rgba(13,148,136,0.1); border: 1px solid rgba(13,148,136,0.35); vertical-align: 1px; }
+        .feed-sentinel { padding: 14px 0 4px; text-align: center; font-size: 0.78rem; color: var(--text-tertiary); }
         .feed-time { flex-shrink: 0; font-size: 0.74rem; color: var(--text-tertiary); }
         .feed-text { margin-top: 12px; padding: 0 14px; font-size: 0.9rem; color: var(--text-primary); line-height: 1.7; }
         .blog-tag { color: var(--primary); cursor: pointer; font-weight: 500; }
@@ -354,6 +358,7 @@
                     </div>
 
                     <div class="feed-section" id="feedSection"></div>
+                    <div class="feed-sentinel" id="feedSentinel"></div>
                 </div>
 
                 <div class="profile-card" id="profileCard"></div>
@@ -507,7 +512,7 @@
                 avatarHtml(b) +
                 '<div class="feed-user">' +
                     '<div class="feed-name">' + esc(b.nickname) + '</div>' +
-                    '<div class="feed-bid">bid：' + b.bid + '</div>' +
+                    '<div class="feed-bid">bid：' + b.bid + (b.featured ? '<span class="feed-badge">入选未阔月刊</span>' : '') + '</div>' +
                 '</div>' +
                 '<span class="feed-time">' + fmtBlogTime(b.created_at) + '</span>' +
             '</div>' +
@@ -569,23 +574,70 @@
         shareBid = 0;
         loadBlogs();
     }
+    // ===== 博客流分页（首屏 5 条，滚动到底自动加载） =====
+    var PAGE_SIZE = 5;
+    var feedPage = { before: 0, hasMore: true, loading: false, end: false };
+    function renderSentinel() {
+        var s = document.getElementById('feedSentinel');
+        if (!s) return;
+        s.textContent = feedPage.loading ? '加载中…' : (feedPage.end ? '没有更多了' : '');
+    }
     function loadBlogs() {
         if (shareBid > 0) { renderSharedBlog(); return; }
-        var url = '/api/blogs' + (currentTopic ? '?topic=' + encodeURIComponent(currentTopic) : '');
+        feedPage = { before: 0, hasMore: true, loading: false, end: false };
+        var url = '/api/blogs?limit=' + PAGE_SIZE + (currentTopic ? '&topic=' + encodeURIComponent(currentTopic) : '');
         blogFetch(url)
             .then(function (r) { if (!r.ok) throw new Error('加载失败'); return r.json(); })
             .then(function (d) {
                 var blogs = d.blogs || [];
+                feedPage.hasMore = !!d.hasMore;
+                feedPage.end = !d.hasMore;
+                if (blogs.length) feedPage.before = blogs[blogs.length - 1].bid;
                 var html = currentTopic ? topicBarHtml() : '';
                 html += blogs.length
                     ? blogs.map(feedItemHtml).join('')
                     : (currentTopic ? '<div class="feed-empty-note">该话题下还没有博客</div>' : defaultItemHtml());
                 document.getElementById('feedSection').innerHTML = html;
+                renderSentinel();
             })
             .catch(function () {
+                feedPage.end = true;
                 document.getElementById('feedSection').innerHTML =
                     (currentTopic ? topicBarHtml() : '') + '<div class="feed-empty-note">加载失败</div>';
+                renderSentinel();
             });
+    }
+    function loadMoreBlogs() {
+        if (feedPage.loading || !feedPage.hasMore || feedPage.before <= 0) return;
+        feedPage.loading = true;
+        renderSentinel();
+        var url = '/api/blogs?limit=' + PAGE_SIZE + '&before=' + feedPage.before +
+            (currentTopic ? '&topic=' + encodeURIComponent(currentTopic) : '');
+        blogFetch(url)
+            .then(function (r) { if (!r.ok) throw new Error('加载失败'); return r.json(); })
+            .then(function (d) {
+                feedPage.loading = false;
+                var blogs = d.blogs || [];
+                feedPage.hasMore = !!d.hasMore;
+                feedPage.end = !d.hasMore;
+                if (blogs.length) feedPage.before = blogs[blogs.length - 1].bid;
+                var sec = document.getElementById('feedSection');
+                if (blogs.length) sec.insertAdjacentHTML('beforeend', blogs.map(feedItemHtml).join(''));
+                renderSentinel();
+            })
+            .catch(function () {
+                feedPage.loading = false;
+                feedPage.end = true;
+                renderSentinel();
+            });
+    }
+    // 滚动/视口触底自动加载（哨兵元素进入视口时翻页）
+    if ('IntersectionObserver' in window) {
+        var feedSentinelEl = document.getElementById('feedSentinel');
+        var feedObserver = new IntersectionObserver(function (entries) {
+            entries.forEach(function (en) { if (en.isIntersecting) loadMoreBlogs(); });
+        }, { rootMargin: '160px 0px' });
+        feedObserver.observe(feedSentinelEl);
     }
 
     // ===== 卡片交互（事件委托） =====
