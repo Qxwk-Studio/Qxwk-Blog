@@ -201,6 +201,10 @@
         .art-nav-btn:hover:not(:disabled) { border-color:var(--primary); color:var(--primary); }
         .art-nav-btn:disabled { opacity:0.4; cursor:not-allowed; }
         .art-nav-btn .lbl { max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .art-share { display:inline-flex; align-items:center; gap:5px; margin-top:10px; padding:6px 14px;
+            background:var(--bg); border:1px solid var(--border); border-radius:40px; cursor:pointer;
+            font-size:0.78rem; color:var(--text-secondary); font-family:var(--font-sans); transition:all var(--transition); }
+        .art-share:hover { color:var(--primary); border-color:var(--primary); }
 
         .footer { background:#0f172a; text-align:center; padding:28px 24px;
             color:var(--text-tertiary); font-size:0.85rem; border-top:1px solid rgba(255,255,255,0.06); }
@@ -720,6 +724,25 @@
                 }
                 renderMagazine(issues);
 
+                // 分享深链：?issue=<期id>&article=<slug> 自动打开阅读弹窗定位到该篇
+                var sp = new URLSearchParams(location.search);
+                var issueParam = sp.get('issue');
+                if (issueParam) {
+                    for (var i = 0; i < issues.length; i++) {
+                        if (String(issues[i].id) === String(issueParam)) {
+                            openReader(i);
+                            var artParam = sp.get('article');
+                            if (artParam) {
+                                var arts = issues[i].articles || [];
+                                for (var j = 0; j < arts.length; j++) {
+                                    if (String(arts[j].slug) === String(artParam)) { selectArticle(j); break; }
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+
                 // 后台探测 raw 域名可达性（整会话缓存），避免点击文章时才反复触发预检错误
                 _probeRawAvailable().catch(function () {});
             } catch (e) {
@@ -852,7 +875,8 @@
             metaParts.push(esc(currentIssue.title));
             metaParts.push('第' + (idx + 1) + ' / ' + total + ' 篇');
             var html = '<div class="article-head"><h3>' + esc(title) + '</h3>' +
-                '<div class="art-meta">' + metaParts.join(' · ') + '</div></div>';
+                '<div class="art-meta">' + metaParts.join(' · ') + '</div>' +
+                '<button type="button" class="art-share" onclick="shareArticle()">分享本篇</button></div>';
             html += '<div class="article-content">';
             if (paragraphs.length) {
                 for (var i = 0; i < paragraphs.length; i++) html += '<p>' + esc(paragraphs[i]) + '</p>';
@@ -880,6 +904,24 @@
                 '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>';
             html += '</div>';
             area.insertAdjacentHTML('beforeend', html);
+        }
+
+        // 分享本篇：生成 /monthly/?issue=<期id>&article=<slug> 深链
+        function shareArticle() {
+            if (!currentIssue) return;
+            var arts = currentIssue.articles || [];
+            var a = arts[currentArtIdx];
+            if (!a) return;
+            var url = location.origin + '/monthly/?issue=' + encodeURIComponent(currentIssue.id) +
+                '&article=' + encodeURIComponent(a.slug);
+            var data = { title: currentIssue.title, text: a.title, url: url };
+            if (navigator.share) { navigator.share(data).catch(function () {}); }
+            else if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(
+                    function () { showToast('链接已复制'); },
+                    function () { showToast('复制失败'); }
+                );
+            } else { showToast(url); }
         }
 
         function closeReader() {

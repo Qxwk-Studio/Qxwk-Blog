@@ -111,6 +111,8 @@
             box-shadow: 0 2px 10px rgba(37,99,235,0.25); }
         .profile-avatar-icon { display: flex; align-items: center; justify-content: center;
             background: var(--bg); color: var(--text-tertiary); }
+        .profile-avatar-letter { display: flex; align-items: center; justify-content: center; color: #fff;
+            font-size: 1.3rem; font-weight: 700; }
         .profile-card .nick { margin-top: 10px; font-size: 0.98rem; font-weight: 700; }
         .profile-card .bio { margin-top: 2px; font-size: 0.74rem; color: var(--text-tertiary); }
         .profile-stats { display: flex; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
@@ -123,9 +125,12 @@
         .feed-section { width: 100%; }
         .feed-item { padding: 16px 18px 14px; background: var(--surface);
             border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
+        .feed-item + .feed-item { margin-top: 12px; }
         .feed-top { display: flex; align-items: flex-start; gap: 12px; }
         .feed-avatar { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; object-fit: cover;
             box-shadow: 0 2px 8px rgba(37,99,235,0.2); }
+        .feed-avatar-letter { display: flex; align-items: center; justify-content: center; color: #fff;
+            font-size: 0.95rem; font-weight: 700; }
         .feed-user { flex: 1; min-width: 0; }
         .feed-name { font-size: 0.9rem; font-weight: 700; }
         .feed-bid { margin-top: 2px; font-size: 0.72rem; color: var(--text-tertiary); }
@@ -159,6 +164,8 @@
         .feed-action:hover { color: var(--primary); background: var(--primary-subtle); }
         .feed-action:disabled { opacity: 0.6; cursor: default; }
         .feed-action:disabled:hover { color: var(--text-secondary); background: none; }
+        .feed-action.liked { color: var(--secondary); }
+        .feed-action.liked:hover, .feed-action.liked:disabled:hover { color: var(--secondary); background: none; }
         .feed-actions-right { display: flex; align-items: center; gap: 14px; }
         .feed-share { display: inline-flex; align-items: center; gap: 5px; background: none; border: none;
             color: var(--text-secondary); font: inherit; font-size: 0.8rem; cursor: pointer; padding: 3px 6px;
@@ -471,6 +478,17 @@
         if (label) label.textContent = '保存修改';
     }
 
+    // 头像：有 avatar 用图（失败兜底 favicon）；无头像与足迹一致显示昵称首字（底色为专属颜色）
+    function avatarHtml(b) {
+        if (b.avatar) return '<img class="feed-avatar" src="' + esc(b.avatar) + '" onerror="this.src=\'/favicon.webp\'" alt="' + esc(b.nickname) + '">';
+        var ch = (b.nickname || '?').charAt(0).toUpperCase();
+        return '<span class="feed-avatar feed-avatar-letter" style="background:' + esc(b.color || '#2563eb') + '">' + esc(ch) + '</span>';
+    }
+    function profileAvatarHtml(me) {
+        if (me.avatar) return '<img class="profile-avatar" src="' + esc(me.avatar) + '" onerror="this.src=\'/favicon.webp\'" alt="' + esc(me.nickname) + '">';
+        var ch = (me.nickname || '?').charAt(0).toUpperCase();
+        return '<span class="profile-avatar profile-avatar-letter" style="background:' + esc(me.color || '#2563eb') + '">' + esc(ch) + '</span>';
+    }
     // ===== 博客流渲染 =====
     function feedItemHtml(b) {
         var left = b.is_owner
@@ -484,7 +502,7 @@
             : '<div></div>';
         return '<div class="feed-item" data-id="' + b.bid + '"' + (b.demo ? ' data-demo="1"' : '') + ' data-owner="' + (b.is_owner ? 1 : 0) + '">' +
             '<div class="feed-top">' +
-                '<img class="feed-avatar" src="/favicon.webp" alt="' + esc(b.nickname) + '">' +
+                avatarHtml(b) +
                 '<div class="feed-user">' +
                     '<div class="feed-name">' + esc(b.nickname) + '</div>' +
                     '<div class="feed-bid">bid：' + b.bid + '</div>' +
@@ -511,6 +529,7 @@
         return h;
     }
     var currentTopic = '';
+    var shareBid = Number(new URLSearchParams(location.search).get('bid') || 0);
     function topicBarHtml() {
         return '<div class="feed-topicbar">正在查看话题：<b>#' + esc(currentTopic) + '#</b>' +
             '<button type="button" onclick="clearTopic()">清除</button></div>';
@@ -524,7 +543,32 @@
             created_at: new Date().toISOString(), likes_count: 0
         });
     }
+    // 分享深链：/?bid=<id> 只展示该篇 + 返回博客流按钮
+    function renderSharedBlog() {
+        blogFetch('/api/blogs/' + shareBid)
+            .then(function (r) {
+                if (!r.ok) throw new Error('博客不存在或已删除');
+                return r.json();
+            })
+            .then(function (d) {
+                var b = d.blog;
+                document.getElementById('feedSection').innerHTML =
+                    '<div class="feed-topicbar">正在查看分享的博客<b>#' + b.bid + '</b>' +
+                    '<button type="button" onclick="clearShared()">返回博客流</button></div>' +
+                    feedItemHtml(b);
+            })
+            .catch(function () {
+                document.getElementById('feedSection').innerHTML =
+                    '<div class="feed-empty-note">分享的博客不存在或已删除</div>';
+            });
+    }
+    function clearShared() {
+        history.replaceState(null, '', location.pathname);
+        shareBid = 0;
+        loadBlogs();
+    }
     function loadBlogs() {
+        if (shareBid > 0) { renderSharedBlog(); return; }
         var url = '/api/blogs' + (currentTopic ? '?topic=' + encodeURIComponent(currentTopic) : '');
         blogFetch(url)
             .then(function (r) { if (!r.ok) throw new Error('加载失败'); return r.json(); })
@@ -609,6 +653,7 @@
                 })
                 .then(function (d) {
                     btn.querySelector('span').textContent = d.likes_count;
+                    btn.classList.add('liked');
                 })
                 .catch(function (err) { btn.disabled = false; showToast(err.message); });
             return;
@@ -620,15 +665,18 @@
         if (!e.target.closest('.feed-menu')) closeAllMenus();
     });
     function shareBlog(item) {
+        var id = Number(item.dataset.id);
+        var isDemo = item.dataset.demo === '1';
+        var url = isDemo ? location.href : location.origin + '/?bid=' + id;
         var text = item.querySelector('.feed-text').textContent;
-        var data = { title: '青翔未阔博客', text: text, url: location.href };
+        var data = { title: '青翔未阔博客', text: text, url: url };
         if (navigator.share) { navigator.share(data).catch(function () {}); }
         else if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(location.href).then(
+            navigator.clipboard.writeText(url).then(
                 function () { showToast('链接已复制'); },
                 function () { showToast('分享功能即将上线'); }
             );
-        } else { showToast('分享功能即将上线'); }
+        } else { showToast(url); }
     }
 
     // ===== 个人资料卡：登录显示用户信息，未登录显示登录引导 =====
@@ -641,10 +689,9 @@
             '</div>';
     }
     function loggedInHtml(me) {
-        var avatar = me.avatar ? esc(me.avatar) : '/favicon.webp';
-        return '<img class="profile-avatar" src="' + avatar + '" onerror="this.src=\'/favicon.webp\'" alt="' + esc(me.nickname) + '">' +
+        return profileAvatarHtml(me) +
             '<div class="nick">' + esc(me.nickname) + '</div>' +
-            '<div class="bio">随心记录，定期成刊</div>' +
+            '<div class="bio"' + (me.color ? ' style="color:' + esc(me.color) + '"' : '') + '>随心记录，定期成刊</div>' +
             '<div class="profile-stats">' +
                 '<div class="stat"><b>0</b><span>发布的文章</span></div>' +
                 '<div class="stat"><b>0</b><span>入选的文章</span></div>' +
