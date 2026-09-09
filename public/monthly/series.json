@@ -1,11 +1,18 @@
 {
   "series": [
     {
+      "name": "呓林",
+      "icon": "🌳",
+      "count": 2,
+      "lastIssue": "2026-09",
+      "lastTitle": "18岁，被世界推出家门"
+    },
+    {
       "name": "尖塔小课堂",
       "icon": "🗼",
-      "count": 1,
-      "lastIssue": "2024-05",
-      "lastTitle": "战士的系统认知"
+      "count": 2,
+      "lastIssue": "2026-09",
+      "lastTitle": "塔2猎手输出牌选取思路"
     },
     {
       "name": "卡丘大食堂",
@@ -18,9 +25,9 @@
     {
       "name": "经天纬地谈科技",
       "icon": "🚀",
-      "count": 1,
-      "lastIssue": "2024-04",
-      "lastTitle": "序言&恒星"
+      "count": 2,
+      "lastIssue": "2026-09",
+      "lastTitle": "大模型从入门到入土"
     },
     {
       "name": "煦言",
@@ -55,9 +62,9 @@
     {
       "name": "舌尖上的MC",
       "icon": "🍜",
-      "count": 2,
-      "lastIssue": "2023-12",
-      "lastTitle": "第二集 团圆"
+      "count": 4,
+      "lastIssue": "2026-09",
+      "lastTitle": "第四集 醇香"
     },
     {
       "name": "泰拉看点",
