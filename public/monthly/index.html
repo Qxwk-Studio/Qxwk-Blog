@@ -939,7 +939,7 @@
         // 加载系列卡片（同目录 series.json）
         async function loadSeries() {
             try {
-                var r = await fetch('series.json', { cache: 'force-cache' });
+                var r = await fetch('series.json', { cache: 'no-store' });
                 if (!r.ok) return;
                 var data = JSON.parse(await r.text());
                 if (!data || !data.series || !data.series.length) return;
