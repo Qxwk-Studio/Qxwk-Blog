@@ -171,6 +171,7 @@
         .feed-action:disabled { opacity: 0.6; cursor: default; }
         .feed-action:disabled:hover { color: var(--text-secondary); background: none; }
         .feed-action.liked { color: var(--secondary); }
+        .feed-action.liked svg { fill: currentColor; } /* 点赞后图标实心填充青色 */
         .feed-action.liked:hover, .feed-action.liked:disabled:hover { color: var(--secondary); background: none; }
         .feed-actions-right { display: flex; align-items: center; gap: 14px; }
         .feed-share { display: inline-flex; align-items: center; gap: 5px; background: none; border: none;
@@ -445,11 +446,18 @@
 
     // ===== 发布 / 修改（编辑时复用输入框，按钮切换为“保存修改”） =====
     var editId = 0;
+    // 邮箱未验证：提示并引导到通行证中心完成验证
+    function askEmailVerify() {
+        if (confirm('发布博客需先完成邮箱验证。\n是否前往通行证中心验证邮箱？')) {
+            location.href = 'https://account.qxwkstudio.top/account.html';
+        }
+    }
     function submitPost() {
         var el = document.getElementById('composeInput');
         var content = el.value.trim();
         if (!content) { showToast('先写点内容再发布吧'); el.focus(); return; }
         if (!needLogin()) return;
+        if (!editId && window._emailVerified === false) { askEmailVerify(); return; }
         var url = editId ? '/api/blogs/' + editId : '/api/blogs';
         var method = editId ? 'PATCH' : 'POST';
         blogFetch(url, { method: method, body: JSON.stringify({ content: content }) })
@@ -458,6 +466,11 @@
                     try { localStorage.removeItem(BLOG_TOKEN_KEY); } catch (e) {}
                     passportLogin();
                     throw new Error('登录已失效，请重新登录');
+                }
+                if (r.status === 403) {
+                    window._emailVerified = false;
+                    askEmailVerify();
+                    throw new Error('未完成邮箱验证');
                 }
                 if (!r.ok) return r.json().then(function (d) { throw new Error(d.error || '操作失败'); });
                 return r.json();
@@ -498,7 +511,7 @@
     }
     // ===== 博客流渲染 =====
     function feedItemHtml(b) {
-        var left = b.is_owner
+        var left = b.can_moderate
             ? '<div class="feed-menu">' +
                 '<button class="feed-dots" type="button" title="更多" aria-label="更多">' + DOTS_SVG + '</button>' +
                 '<div class="feed-menu-pop">' +
@@ -507,7 +520,7 @@
                 '</div>' +
               '</div>'
             : '<div></div>';
-        return '<div class="feed-item" data-id="' + b.bid + '"' + (b.demo ? ' data-demo="1"' : '') + ' data-owner="' + (b.is_owner ? 1 : 0) + '">' +
+        return '<div class="feed-item" data-id="' + b.bid + '">' +
             '<div class="feed-top">' +
                 avatarHtml(b) +
                 '<div class="feed-user">' +
@@ -542,14 +555,6 @@
             '<button type="button" onclick="clearTopic()">清除</button></div>';
     }
     function clearTopic() { currentTopic = ''; loadBlogs(); }
-    // 无博客时的默认欢迎卡片（占位演示）
-    function defaultItemHtml() {
-        return feedItemHtml({
-            bid: 1, demo: true, is_owner: true, nickname: '青翔未阔',
-            content: '欢迎来到青翔未阔博客～在这里随心记录，分享你的博客、想法与生活。',
-            created_at: new Date().toISOString(), likes_count: 0
-        });
-    }
     // 分享深链：/?bid=<id> 只展示该篇 + 返回博客流按钮
     function renderSharedBlog() {
         blogFetch('/api/blogs/' + shareBid)
@@ -596,7 +601,7 @@
                 var html = currentTopic ? topicBarHtml() : '';
                 html += blogs.length
                     ? blogs.map(feedItemHtml).join('')
-                    : (currentTopic ? '<div class="feed-empty-note">该话题下还没有博客</div>' : defaultItemHtml());
+                    : (currentTopic ? '<div class="feed-empty-note">该话题下还没有博客</div>' : '');
                 document.getElementById('feedSection').innerHTML = html;
                 renderSentinel();
             })
@@ -650,7 +655,6 @@
         var item = e.target.closest('.feed-item');
         if (!item) return;
         var id = Number(item.dataset.id);
-        var isDemo = item.dataset.demo === '1';
 
         // 点击 #话题 → 按话题过滤博客流
         var tagEl = e.target.closest('.blog-tag');
@@ -673,7 +677,6 @@
         if (actEl) {
             var act = actEl.dataset.act;
             closeAllMenus();
-            if (isDemo) { showToast('发布第一条博客后即可使用'); return; }
             if (act === 'edit') {
                 startEdit(id, item.querySelector('.feed-text').textContent);
             } else if (act === 'del') {
@@ -696,7 +699,6 @@
         }
         // 点赞
         if (e.target.closest('.like-btn')) {
-            if (isDemo) { showToast('发布第一条博客后即可使用'); return; }
             var btn = e.target.closest('.like-btn');
             if (btn.disabled) return;
             btn.disabled = true;
@@ -720,8 +722,7 @@
     });
     function shareBlog(item) {
         var id = Number(item.dataset.id);
-        var isDemo = item.dataset.demo === '1';
-        var url = isDemo ? location.href : location.origin + '/?bid=' + id;
+        var url = location.origin + '/?bid=' + id;
         var text = item.querySelector('.feed-text').textContent;
         var data = { title: '青翔未阔博客', text: text, url: url };
         if (navigator.share) { navigator.share(data).catch(function () {}); }
@@ -767,6 +768,7 @@
             })
             .then(function (me) {
                 if (!me || !me.nickname) { card.innerHTML = notLoggedInHtml(); return; }
+                window._emailVerified = !!me.email_verified; // 发布博客的邮箱验证前置
                 card.innerHTML = loggedInHtml(me);
             })
             .catch(function () { card.innerHTML = notLoggedInHtml(); });

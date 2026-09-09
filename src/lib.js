@@ -16,7 +16,7 @@ export function error(message, status = 400) {
   return json({ error: message }, status);
 }
 
-// 用 Bearer token 去通行证 /api/me 验证，返回 {userId, nickname, color, avatar} 或 null
+// 用 Bearer token 去通行证 /api/me 验证，返回 {userId, nickname, color, avatar, emailVerified} 或 null
 async function getPassportUser(request) {
   const auth = request.headers.get('Authorization') || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
@@ -28,13 +28,13 @@ async function getPassportUser(request) {
     if (!r.ok) return null;
     const u = await r.json();
     if (!u || !u.userId) return null;
-    return { userId: u.userId, nickname: u.nickname, color: u.color, avatar: u.avatar };
+    return { userId: u.userId, nickname: u.nickname, color: u.color, avatar: u.avatar, emailVerified: !!u.email_verified };
   } catch {
     return null;
   }
 }
 
-// 通行证用户 -> 本地 CF 用户：首次自动建（颜色/头像同步通行证），返回 {id, nickname, color, isAdmin, avatar} 或 null
+// 通行证用户 -> 本地 CF 用户：首次自动建（颜色/头像同步通行证），返回 {id, nickname, color, isAdmin, avatar, emailVerified} 或 null
 async function resolveViewer(DB, request) {
   const p = await getPassportUser(request);
   if (!p) return null;
@@ -60,7 +60,7 @@ async function resolveViewer(DB, request) {
     u.color = p.color;
     u.avatar = p.avatar;
   }
-  return u ? { id: u.id, nickname: u.nickname, color: u.color, isAdmin: !!u.is_admin, avatar: p.avatar } : null;
+  return u ? { id: u.id, nickname: u.nickname, color: u.color, isAdmin: !!u.is_admin, avatar: p.avatar, emailVerified: p.emailVerified } : null;
 }
 
 // 从 Authorization 解析本地用户 id（业务路由用，无 token / 验证失败返回 null）

@@ -54,7 +54,7 @@ async function handleApi(request, env) {
     ).bind(v.id).first();
     return json({
       userId: v.id, nickname: v.nickname, color: v.color, is_admin: v.isAdmin,
-      created_at: u && u.created_at, avatar: v.avatar,
+      created_at: u && u.created_at, avatar: v.avatar, email_verified: v.emailVerified,
       blogs_count: stat ? stat.total : 0, featured_count: stat ? stat.featured : 0,
     });
   }
@@ -134,10 +134,11 @@ async function handleApi(request, env) {
 
   // ---------- 博客（青翔博客动态） ----------
 
-  // POST /api/blogs（登录：发布博客）
+  // POST /api/blogs（登录且邮箱已验证：发布博客）
   if (method === 'POST' && path === '/api/blogs') {
     const v = await resolveViewer(DB, request);
     if (!v) return error('未登录', 401);
+    if (!v.emailVerified) return error('需先完成邮箱验证才能发布博客，请前往通行证中心验证邮箱', 403);
     const body = await request.json().catch(() => ({}));
     const content = String(body.content || '').trim();
     if (!content) return error('内容不能为空');
@@ -185,7 +186,7 @@ async function handleApi(request, env) {
       likes_count: r.likes_count,
       created_at: r.created_at,
       updated_at: r.updated_at,
-      is_owner: v.userId > 0 && r.user_id === v.userId,
+      can_moderate: (v.userId > 0 && r.user_id === v.userId) || v.isAdmin,
     }));
     return json({ blogs, hasMore });
   }
@@ -208,7 +209,8 @@ async function handleApi(request, env) {
         bid: row.id, uid: row.user_id, nickname: row.nickname, color: row.color, avatar: row.avatar,
         content: row.content, topics: parseJsonArray(row.topics), mentions: parseJsonArray(row.mentions),
         featured: !!row.featured, likes_count: row.likes_count, created_at: row.created_at,
-        updated_at: row.updated_at, is_owner: v.userId > 0 && row.user_id === v.userId,
+        updated_at: row.updated_at,
+        can_moderate: (v.userId > 0 && row.user_id === v.userId) || v.isAdmin,
       },
     });
   }
@@ -240,7 +242,7 @@ async function handleApi(request, env) {
     const id = Number(blogMatch[1]);
     const row = await DB.prepare('SELECT user_id FROM bg_blogs WHERE id = ? AND is_deleted = 0').bind(id).first();
     if (!row) return error('博客不存在', 404);
-    if (row.user_id !== v.id) return error('无权修改', 403);
+    if (row.user_id !== v.id && !v.isAdmin) return error('无权修改', 403);
     const body = await request.json().catch(() => ({}));
     const content = String(body.content || '').trim();
     if (!content) return error('内容不能为空');
@@ -260,7 +262,7 @@ async function handleApi(request, env) {
     const id = Number(blogMatch[1]);
     const row = await DB.prepare('SELECT user_id FROM bg_blogs WHERE id = ? AND is_deleted = 0').bind(id).first();
     if (!row) return error('博客不存在', 404);
-    if (row.user_id !== v.id) return error('无权删除', 403);
+    if (row.user_id !== v.id && !v.isAdmin) return error('无权删除', 403);
     await DB.prepare('UPDATE bg_blogs SET is_deleted = 1, updated_at = datetime("now") WHERE id = ?').bind(id).run();
     return json({ ok: true });
   }
