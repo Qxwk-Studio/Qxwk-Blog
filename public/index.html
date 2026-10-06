@@ -6,43 +6,11 @@
     <title>未阔月刊 - 青翔未阔工作室</title>
     <meta name="description" content="《未阔月刊》——青翔未阔工作室的每月一刊，汇聚工作室博客、项目进展与成员随笔。">
     <link rel="icon" type="image/webp" href="/favicon.webp">
+    <link rel="stylesheet" href="style.css">
     <style>
-        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-        :root {
-            --primary: #2563eb; --primary-hover: #1d4ed8;
-            --secondary: #0d9488;
-            --surface: #ffffff; --bg: #f8fafc;
-            --text-primary: #0f172a; --text-secondary: #64748b; --text-tertiary: #94a3b8;
-            --border: #e2e8f0; --navbar-bg: rgba(255, 255, 255, 0.8);
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06); --shadow-md: 0 4px 16px rgba(0,0,0,0.08); --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
-            --radius-sm: 8px; --radius-md: 14px;
-            --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
-            --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-            --container: 1100px; --nav-height: 64px;
-        }
-        html { scroll-behavior: smooth; }
-        body {
-            font-family: var(--font-sans); background: var(--bg); color: var(--text-primary);
-            line-height: 1.6; -webkit-font-smoothing: antialiased;
-            min-height: 100vh; display: flex; flex-direction: column;
-        }
-        .navbar { position:sticky; top:0; width:100%; height:var(--nav-height); z-index:100;
-            background:var(--navbar-bg); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-            border-bottom:1px solid var(--border); }
-        .navbar-inner { max-width:var(--container); margin:0 auto; padding:0 24px;
-            display:flex; align-items:center; justify-content:space-between; height:100%; }
-        .navbar-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text-primary);
-            font-weight:600; font-size:1.15rem; letter-spacing:0.3px; transition:opacity var(--transition); }
-        .navbar-brand:hover { opacity:0.85; }
-        .brand-text { line-height: 1.25; }
-        .brand-text b { display: block; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; }
-        .brand-text span { display: block; font-size: 11px; color: var(--text-tertiary); }
-        .back-link { display:inline-flex; align-items:center; gap:6px; padding:8px 18px;
-            background:rgba(37,99,235,0.15); color:var(--text-primary); text-decoration:none;
-            border-radius:40px; font-size:0.88rem; font-weight:500;
-            backdrop-filter:blur(4px); border:1px solid rgba(147,197,253,0.35);
-            transition:all var(--transition); white-space:nowrap; }
-        .back-link:hover { background:rgba(37,99,235,0.3); border-color:rgba(147,197,253,0.6); transform:scale(1.02); }
+        /* Reset / 设计变量 / body / 顶栏 / 品牌 / 主题按钮 / 底栏 / Toast 已抽到公共
+           style.css，页面 <style> 在它之后加载，专有规则照常覆盖；本页仅保留专有部分 */
+
         .main { flex:1; padding:36px 24px 60px; }
         .container { max-width:var(--container); margin:0 auto; }
         .page-header { margin-bottom:32px; }
@@ -222,21 +190,6 @@
             font-size:0.78rem; color:var(--text-secondary); font-family:var(--font-sans); transition:all var(--transition); }
         .art-share:hover { color:var(--primary); border-color:var(--primary); }
 
-        .footer { background:#0f172a; text-align:center; padding:28px 24px;
-            color:var(--text-tertiary); font-size:0.85rem; border-top:1px solid rgba(255,255,255,0.06); }
-        .footer-copy { opacity:0.6; }
-
-        /* ===== Toast（与主站"开发中"一致） ===== */
-        .toast { position:fixed; top:-60px; left:50%; transform:translateX(-50%);
-            background:var(--surface); color:var(--text-primary); border:1px solid var(--border);
-            padding:12px 24px; border-radius:var(--radius-sm); font-size:0.9rem; font-weight:500;
-            z-index:3000; opacity:0; pointer-events:none;
-            box-shadow:0 4px 20px rgba(0,0,0,0.1);
-            display:flex; align-items:center; gap:10px;
-            transition:top 0.35s ease, opacity 0.35s ease; }
-        .toast svg { color:var(--primary); flex-shrink:0; }
-        .toast.show { top:80px; opacity:1; }
-
         @media (max-width:900px) {
             .issues-grid { grid-template-columns:repeat(2,1fr); }
             .featured { grid-template-columns:1fr; }
@@ -244,7 +197,6 @@
             .series-chip { flex:1 0 calc(50% - 5px); }
         }
         @media (max-width:640px) {
-            .navbar-inner { padding:0 16px; }
             .main { padding:24px 16px 40px; }
             .series-bar { padding:14px 14px; margin-bottom:22px; }
             .series-chip { flex:1 0 100%; padding:8px 12px; }
@@ -260,10 +212,7 @@
             .toc-item { white-space:nowrap; flex-shrink:0; }
             .reader-article { padding:22px 20px 32px; }
         }
-        @media (prefers-reduced-motion:reduce) {
-            *, *::before, *::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; }
-        }
-    </style>
+        </style>
     <meta name="color-scheme" content="light dark">
     <script>
     /* 主题切换：localStorage('theme') 优先，其次跟随系统 prefers-color-scheme；同步写入 <html> 的 data-theme 防闪烁 */
@@ -288,31 +237,9 @@
     })();
     </script>
     <style>
-        /* ===== 黑夜模式：主题切换按钮 ===== */
-        .theme-toggle { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; padding:0; background:none; border:none; border-radius:50%; color:var(--text-primary); cursor:pointer; transition:background var(--transition), color var(--transition); }
-        .theme-toggle:hover { background:var(--primary-subtle); color:var(--primary); }
-        .theme-toggle svg { width:22px; height:22px; }
-        .theme-toggle .icon-sun { display:none; }
-        :root[data-theme="dark"] .theme-toggle .icon-sun { display:block; }
-        :root[data-theme="dark"] .theme-toggle .icon-moon { display:none; }
-
-        /* ===== 黑夜模式：深色变量 ===== */
-        :root { color-scheme: light; --primary-light:#eff6ff; --primary-subtle:rgba(37,99,235,0.08); }
-        :root[data-theme="dark"] {
-            color-scheme: dark;
-            --primary-light: rgba(59,130,246,0.16);
-            --primary-subtle: rgba(59,130,246,0.16);
-            --surface:#1e293b; --bg:#0f172a;
-            --text-primary:#e2e8f0; --text-secondary:#94a3b8; --text-tertiary:#64748b;
-            --border:#334155; --navbar-bg:rgba(15,23,42,0.8);
-            --shadow-sm:0 1px 3px rgba(0,0,0,0.4); --shadow-md:0 4px 16px rgba(0,0,0,0.5); --shadow-lg:0 12px 40px rgba(0,0,0,0.6);
-        }
-        :root[data-theme="dark"] .footer { background:#111827; }
-        :root[data-theme="dark"] .back-link { background:rgba(59,130,246,0.16); border-color:rgba(96,165,250,0.35); }
-        :root[data-theme="dark"] .back-link:hover { background:rgba(59,130,246,0.30); border-color:rgba(96,165,250,0.60); }
+        /* 主题切换按钮与深色变量已抽到公共 style.css，本页仅保留专有元素的深色覆盖 */
         :root[data-theme="dark"] .error-msg, :root[data-theme="dark"] .article-error { background:rgba(239,68,68,0.12); border-color:rgba(239,68,68,0.35); color:#fca5a5; }
         :root[data-theme="dark"] .reader-cover img { filter:brightness(0.8); }
-        :root[data-theme="dark"] .toast { background:var(--surface); }
         :root[data-theme="dark"] .art-nav-btn { background:var(--bg); }
         :root[data-theme="dark"] .series-chip { background:rgba(30,41,59,0.7); }
         :root[data-theme="dark"] .series-chip .sc-count.done { background:rgba(239, 68, 68, 0.16); color:#fca5a5; }
@@ -324,10 +251,10 @@
     <header class="navbar">
         <div class="navbar-inner">
             <a href="/" class="navbar-brand">
-                <img src="/favicon.webp" alt="青翔未阔工作室" width="28" height="28" style="border-radius:5px;flex-shrink:0;">
+                <img class="brand-logo" src="/favicon.webp" alt="青翔未阔工作室">
                 <span class="brand-text"><b>未阔月刊</b><span>随心记录，定期成刊</span></span>
             </a>
-            <div style="display:flex;align-items:center;gap:10px;">
+            <div class="navbar-right">
                 <button class="theme-toggle" id="themeToggle" type="button" aria-label="切换主题" title="切换主题">
                     <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
                     <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -409,7 +336,7 @@
         var DATA = null;
         var currentIssue = null;   // issue object
         var currentArtIdx = 0;     // index within issue.articles
-        var articleCache = {};     // key: issueId + '/' + slug -> Markdown 正文文本
+        var articleCache = {};     // key: issueId + '/' + slug -> Promise<Markdown 正文文本>（存 Promise 才能合并并发请求）
 
         function esc(t) { var d = document.createElement('div'); d.textContent = t == null ? '' : t; return d.innerHTML; }
         function fmtDate(s) {
@@ -500,16 +427,22 @@
             imgEl.src = isHttpUrl(issue.cover) ? issue.cover : coverUrl(issue);
         }
 
-        // 获取单篇文章正文：本站静态资源（magazine/<期id>/<slug>.md），命中内存缓存直接返回 Markdown 文本
-        async function fetchArticle(issue, article) {
-            if (!issue || !article) throw new Error('参数缺失');
+        // 获取单篇文章正文：本站静态资源（magazine/<期id>/<slug>.md）
+        // 缓存的是 Promise 而非结果文本：同一篇被并发请求（预取 + 点开）时只发一次网络，后者复用同一 Promise；
+        // 失败则删缓存，允许用户重试，不会把一次失败永久钉住
+        function fetchArticle(issue, article) {
+            if (!issue || !article) return Promise.reject(new Error('参数缺失'));
             var key = issue.id + '/' + article.slug;
-            if (articleCache[key] != null) return articleCache[key];
-            var r = await fetch(articleUrl(issue, article));
-            if (!r.ok) throw new Error('请求失败 (' + r.status + ')');
-            var md = await r.text();
-            articleCache[key] = md;
-            return md;
+            if (!articleCache[key]) {
+                articleCache[key] = fetch(articleUrl(issue, article)).then(function (r) {
+                    if (!r.ok) throw new Error('请求失败 (' + r.status + ')');
+                    return r.text();
+                }).catch(function (e) {
+                    delete articleCache[key];
+                    throw e;
+                });
+            }
+            return articleCache[key];
         }
 
         // 文章正文所在目录（用于把正文里的相对插图路径补全），以 md 自身的 URL 目录为准
@@ -518,11 +451,11 @@
             return u ? u.slice(0, u.lastIndexOf('/') + 1) : '';
         }
 
-        // 打开某期阅读时，预加载前几篇文章（避免逐篇等）
-        function preloadArticles(issue, count) {
-            var arts = (issue && issue.articles) || [];
-            var n = Math.min(count || 3, arts.length);
-            for (var i = 0; i < n; i++) fetchArticle(issue, arts[i]).catch(function () {});
+        // 读到某篇时顺手预取下一篇：向前翻页不必等，又不一次预取整本、跟当前篇抢带宽
+        function preloadNext(idx, total) {
+            if (!currentIssue || idx + 1 >= total) return;
+            var next = (currentIssue.articles || [])[idx + 1];
+            if (next) fetchArticle(currentIssue, next).catch(function () {});
         }
 
         async function loadIssues() {
@@ -543,20 +476,27 @@
                 }
                 renderMagazine(issues);
 
+                // 首屏即预取最新一期的第一篇：点开阅读器时正文已到，不必等
+                var latestArts = (issues[0] && issues[0].articles) || [];
+                if (latestArts.length) fetchArticle(issues[0], latestArts[0]).catch(function () {});
+
                 // 分享深链：?issue=<期id>&article=<slug> 自动打开阅读弹窗定位到该篇
                 var sp = new URLSearchParams(location.search);
                 var issueParam = sp.get('issue');
                 if (issueParam) {
                     for (var i = 0; i < issues.length; i++) {
                         if (String(issues[i].id) === String(issueParam)) {
-                            openReader(i);
+                            // 先把 article 定位到索引，再一次性 openReader(i, startIdx)：
+                            // 否则 openReader 内部会先渲染第 0 篇，深链再跳一次，白白多取一篇正文
+                            var startIdx = 0;
                             var artParam = sp.get('article');
                             if (artParam) {
                                 var arts = issues[i].articles || [];
                                 for (var j = 0; j < arts.length; j++) {
-                                    if (String(arts[j].slug) === String(artParam)) { selectArticle(j); break; }
+                                    if (String(arts[j].slug) === String(artParam)) { startIdx = j; break; }
                                 }
                             }
+                            openReader(i, startIdx);
                             break;
                         }
                     }
@@ -613,7 +553,7 @@
 
             container.innerHTML = html;
 
-            // 异步填充封面（走 Contents API blob → object url）
+            // 封面为站点内静态资源，解析完成后异步填入 <img>.src
             for (var j = 0; j < issues.length; j++) {
                 var imgs = container.querySelectorAll('img[data-cover-issue="' + j + '"]');
                 for (var k = 0; k < imgs.length; k++) applyCoverToImg(imgs[k], issues[j]);
@@ -621,7 +561,8 @@
         }
 
         // ===== Reader =====
-        function openReader(issueIndex) {
+        // startIdx：深链定位时直接打开指定篇，省掉「先渲染第 0 篇再跳」的重复取文
+        function openReader(issueIndex, startIdx) {
             var issue = DATA.issues[issueIndex];
             if (!issue) return;
             currentIssue = issue;
@@ -648,12 +589,11 @@
             // 弹窗封面异步加载
             applyCoverToImg(document.getElementById('readerCoverImg'), issue);
 
-            // 预读前 3 篇文章，目录点击不再等
-            preloadArticles(issue, 3);
-            // 进阅读器就必然要渲染正文，marked 与文章并行下载，别串在后面等
+            // 进阅读器就必然要渲染正文，marked 与文章并行下载，别串在后面等；
+            // 正文本身由下面的 selectArticle 按需取，读到哪篇再预取下一篇（见 preloadNext）
             loadMarked();
 
-            if (arts.length) selectArticle(0);
+            if (arts.length) selectArticle(startIdx || 0);
             else document.getElementById('articleArea').innerHTML = '<div class="article-loading">本期暂无文章</div>';
         }
 
@@ -676,6 +616,7 @@
             fetchArticle(currentIssue, article).then(async function (md) {
                 await loadMarked(); // 正文要用 marked 渲染，这里再等它到货
                 renderArticle(article, md, idx, arts.length);
+                preloadNext(idx, arts.length); // 渲染完成后再预取下一篇，占住阅读空档
             }).catch(function (e) {
                 var url = articleUrl(currentIssue, article);
                 var tip = url ? ('预期路径：<br><code style="word-break:break-all;">' + esc(url) + '</code>') : '';

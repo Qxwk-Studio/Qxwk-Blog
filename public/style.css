@@ -1,0 +1,109 @@
+/* ============================================================================
+   Qxwk-Blog · 月刊首页 / 投稿页 / 审核页 共用的公共样式
+
+   这里只放三个页面逐字符一致的「站点外壳」规则：Reset、设计变量、body、顶栏、
+   品牌、主题切换按钮、底栏、Toast，以及响应式（导航内边距 / 减少动效）。
+   各页专有规则（首页的月刊列表与阅读器、投稿表单、审核列表与详情）继续留在各页
+   自己的 <style> 里。
+
+   顶栏与底栏刻意与 Qxwk-Account/public/style.css 对齐：.navbar z-index:1000、
+   .navbar-inner gap:12px、.brand-logo 圆形 34px、.footer 14px 24px / 0.82rem，
+   让两个站点看起来是同一套外壳。
+
+   本文件被三个页面共享，改这里会影响所有引用它的页面。页面 <style> 在本文件之后
+   加载，同优先级下后者胜出，因此页面专有覆盖照旧生效。
+   ============================================================================ */
+
+/* ========= Reset & Base ========= */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+    --primary: #2563eb; --primary-hover: #1d4ed8; --primary-light: #eff6ff;
+    --secondary: #0d9488;
+    --surface: #ffffff; --bg: #f8fafc;
+    --text-primary: #0f172a; --text-secondary: #64748b; --text-tertiary: #94a3b8;
+    --border: #e2e8f0; --navbar-bg: rgba(255, 255, 255, 0.8);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06); --shadow-md: 0 4px 16px rgba(0,0,0,0.08); --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+    --radius-sm: 8px; --radius-md: 14px; --radius-lg: 20px;
+    --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+    --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+    --container: 1100px; --nav-height: 64px;
+    color-scheme: light; --primary-subtle: rgba(37,99,235,0.08);
+}
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --primary: #3b82f6; --primary-hover: #60a5fa;
+    --secondary: #14b8a6;
+    --primary-light: rgba(59,130,246,0.16);
+    --primary-subtle: rgba(59,130,246,0.16);
+    --surface:#1e293b; --bg:#0f172a;
+    --text-primary:#e2e8f0; --text-secondary:#94a3b8; --text-tertiary:#64748b;
+    --border:#334155; --navbar-bg:rgba(15,23,42,0.8);
+    --shadow-sm:0 1px 3px rgba(0,0,0,0.4); --shadow-md:0 4px 16px rgba(0,0,0,0.5); --shadow-lg:0 12px 40px rgba(0,0,0,0.6);
+}
+html { scroll-behavior: smooth; }
+body {
+    font-family: var(--font-sans); background: var(--bg); color: var(--text-primary);
+    line-height: 1.6; -webkit-font-smoothing: antialiased;
+    min-height: 100vh; display: flex; flex-direction: column;
+}
+
+/* ========= Navbar（与 Account 对齐） ========= */
+.navbar { position:sticky; top:0; z-index:1000; height:var(--nav-height);
+    background:var(--navbar-bg); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--border); }
+.navbar-inner { max-width:var(--container); margin:0 auto; padding:0 24px;
+    display:flex; align-items:center; justify-content:space-between; height:100%; gap:12px; }
+.navbar-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text-primary);
+    font-weight:600; font-size:1.15rem; letter-spacing:0.3px; transition:opacity var(--transition); flex-shrink:0; }
+.navbar-brand:hover { opacity:0.85; }
+.brand-logo { width:34px; height:34px; border-radius:50%; flex-shrink:0; object-fit:cover;
+    box-shadow:0 2px 10px rgba(37,99,235,0.25); }
+.brand-text { line-height: 1.25; }
+.brand-text b { display: block; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; }
+.brand-text span { display: block; font-size: 11px; color: var(--text-tertiary); }
+.navbar-right { display:flex; align-items:center; gap:8px; min-width:0; }
+
+/* 顶栏胶囊按钮（投稿 / 返回首页）：Account 无此按钮，博客三页共用 */
+.back-link { display:inline-flex; align-items:center; gap:6px; padding:8px 18px;
+    background:rgba(37,99,235,0.15); color:var(--text-primary); text-decoration:none;
+    border-radius:40px; font-size:0.88rem; font-weight:500;
+    backdrop-filter:blur(4px); border:1px solid rgba(147,197,253,0.35);
+    transition:all var(--transition); white-space:nowrap; }
+.back-link:hover { background:rgba(37,99,235,0.3); border-color:rgba(147,197,253,0.6); transform:scale(1.02); }
+:root[data-theme="dark"] .back-link { background:rgba(59,130,246,0.16); border-color:rgba(96,165,250,0.35); }
+:root[data-theme="dark"] .back-link:hover { background:rgba(59,130,246,0.30); border-color:rgba(96,165,250,0.60); }
+
+/* ========= 主题切换按钮 ========= */
+.theme-toggle { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; padding:0;
+    background:none; border:none; border-radius:50%; color:var(--text-primary); cursor:pointer;
+    transition:background var(--transition), color var(--transition); flex-shrink:0; }
+.theme-toggle:hover { background:var(--primary-subtle); color:var(--primary); }
+.theme-toggle svg { width:22px; height:22px; }
+.theme-toggle .icon-sun { display:none; }
+:root[data-theme="dark"] .theme-toggle .icon-sun { display:block; }
+:root[data-theme="dark"] .theme-toggle .icon-moon { display:none; }
+
+/* ========= Toast ========= */
+.toast { position:fixed; top:-60px; left:50%; transform:translateX(-50%);
+    background:var(--surface); color:var(--text-primary); border:1px solid var(--border);
+    padding:12px 24px; border-radius:var(--radius-sm); font-size:0.9rem; font-weight:500;
+    z-index:3000; opacity:0; pointer-events:none;
+    box-shadow:0 4px 20px rgba(0,0,0,0.1);
+    display:flex; align-items:center; gap:10px; max-width:calc(100vw - 32px);
+    transition:top 0.35s ease, opacity 0.35s ease; }
+.toast svg { color:var(--primary); flex-shrink:0; }
+.toast.show { top:80px; opacity:1; }
+:root[data-theme="dark"] .toast { background:var(--surface); }
+
+/* ========= Footer（与 Account 对齐） ========= */
+.footer { background:#0f172a; text-align:center; padding:14px 24px;
+    color:var(--text-tertiary); font-size:0.82rem; border-top:1px solid rgba(255,255,255,0.06); }
+.footer-copy { opacity:0.6; }
+:root[data-theme="dark"] .footer { background:#111827; }
+
+/* ========= Responsive ========= */
+@media (max-width:640px) { .navbar-inner { padding:0 16px; } }
+@media (prefers-reduced-motion:reduce) {
+    *, *::before, *::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; }
+}

@@ -11,3 +11,10 @@ directory = "public"
 binding = "DB"
 database_name = "qxwk-data"
 database_id = "60221417-13f8-486c-9f95-43e5fefe95d5"
+
+# Worker 缓存（控制台「Cache / 缓存」），与 Qxwk-Account 保持一致
+# enabled = true：为 Worker fetch handler 返回的响应启用边缘缓存，缓存与否由响应自带的
+#   Cache-Control 决定。本站 /api/* 为 no-store，接口不进缓存；静态资源的缓存头由
+#   public/_headers 分级控制（_headers 对静态资源生效——本仓库未设 run_worker_first）。
+[cache]
+enabled = true
