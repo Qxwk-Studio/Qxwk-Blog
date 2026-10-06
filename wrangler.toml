@@ -2,6 +2,11 @@ name = "qxwk-blog"
 main = "src/worker.js"
 compatibility_date = "2026-08-05"
 
+# 关闭默认域（*.workers.dev），只保留自定义域 blog.qxwkstudio.top
+# 自定义域在控制台配置（Worker → 设置 → 触发器 → 自定义域），与 workers_dev 相互独立、不受影响；
+# 这里仅停用 workers.dev 子域，避免出现第二个可访问入口。
+workers_dev = false
+
 # 静态资源目录（public/）
 [assets]
 directory = "public"

@@ -31,7 +31,14 @@
             padding:40px 30px; box-shadow:var(--shadow-sm); max-width:420px; margin:8px auto 0; text-align:center; }
         .gate-card h2 { font-size:1.3rem; font-weight:700; color:var(--text-primary); margin-bottom:10px; }
         .gate-card p { font-size:0.9rem; color:var(--text-secondary); margin-bottom:22px; }
-        .gate-card .field-input { text-align:center; margin-bottom:14px; }
+        /* 口令输入框：本页没有公共 .field-input 基样式，这里补全（此前仅浏览器默认样式，很素） */
+        .gate-card .field-input { width:100%; padding:13px 16px; margin-bottom:14px; text-align:center;
+            font-size:1rem; font-family:var(--font-sans); color:var(--text-primary); background:var(--bg);
+            border:1.5px solid var(--border); border-radius:var(--radius-sm); letter-spacing:0.12em;
+            transition:border-color var(--transition), box-shadow var(--transition), background var(--transition); }
+        .gate-card .field-input::placeholder { letter-spacing:normal; color:var(--text-tertiary); }
+        .gate-card .field-input:focus { outline:none; border-color:var(--primary); background:var(--surface);
+            box-shadow:0 0 0 4px rgba(37,99,235,0.12); }
         .gate-card .btn { width:100%; }
         .gate-msg { font-size:0.84rem; color:#b91c1c; background:#fef2f2; border:1px solid #fecaca;
             border-radius:var(--radius-sm); padding:9px 12px; margin-bottom:16px; }
@@ -231,8 +238,12 @@
         function esc(t) { var d = document.createElement('div'); d.textContent = t == null ? '' : t; return d.innerHTML; }
 
         // 渲染前先对 Markdown 源文本做 HTML 转义：marked 默认放行原始 HTML，
-        // 投稿是陌生人写的，必须先把 < > & 转义掉，杜绝 <script> 之类注入。
-        function escapeSource(md) { return esc(md); }
+        // 投稿是陌生人写的，必须先把 & 和 < 转义掉，杜绝 <script> 之类注入。
+        // 只转 & 和 <（足以阻断标签）——不能转 >：否则行首的引用标记（> ）会被换成 &gt;
+        // 而失效，引用就渲染不出来。
+        function escapeSource(md) {
+            return String(md == null ? '' : md).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+        }
 
         function sanitizeHtml(html) {
             var box = document.createElement('div');

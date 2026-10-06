@@ -32,9 +32,15 @@
         textarea.md-input { min-height:320px; resize:vertical; line-height:1.7; font-family:var(--font-mono); font-size:0.9rem; }
         .md-input[hidden] { display:none; }
 
-        /* 编辑 / 预览 切换 */
+        /* 正文编辑条：左侧常用 Markdown 快捷项，右侧「编辑 / 预览」切换（右对齐） */
+        .editor-bar { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+        .md-tools { display:inline-flex; gap:2px; padding:3px; background:var(--bg); border:1px solid var(--border);
+            border-radius:40px; flex-wrap:wrap; }
+        .md-tool { border:none; background:none; cursor:pointer; font-family:var(--font-sans);
+            padding:5px 11px; border-radius:40px; font-size:0.8rem; color:var(--text-secondary); transition:all var(--transition); }
+        .md-tool:hover { color:var(--primary); background:var(--surface); }
         .md-tabs { display:inline-flex; gap:4px; padding:3px; background:var(--bg); border:1px solid var(--border);
-            border-radius:40px; margin-bottom:8px; }
+            border-radius:40px; }
         .md-tab { border:none; background:none; cursor:pointer; font-family:var(--font-sans);
             padding:5px 16px; border-radius:40px; font-size:0.8rem; color:var(--text-secondary); transition:all var(--transition); }
         .md-tab:hover { color:var(--primary); }
@@ -153,20 +159,24 @@
 
             <label for="subCategory">栏目 / 系列（选填）</label>
             <input class="field-input" id="subCategory" maxlength="40" list="categoryList" placeholder="可从建议里选，也可自由填写（0-40 字）" autocomplete="off">
-            <datalist id="categoryList">
-                <option value="呓林"></option>
-                <option value="尖塔小课堂"></option>
-                <option value="经天纬地谈科技"></option>
-                <option value="舌尖上的MC"></option>
-                <option value="七圣研究所"></option>
-                <option value="煦言"></option>
-                <option value="卡丘大食堂"></option>
-            </datalist>
+            <datalist id="categoryList"><!-- 选项由脚本从 series.json 读取「未完结」系列填充 --></datalist>
 
             <label for="subBody">正文（Markdown）</label>
-            <div class="md-tabs" id="mdTabs">
-                <button type="button" class="md-tab active" data-mode="edit">编辑</button>
-                <button type="button" class="md-tab" data-mode="preview">预览</button>
+            <div class="editor-bar">
+                <div class="md-tools" id="mdTools">
+                    <button type="button" class="md-tool" data-before="**" data-after="**" data-wrap="1" title="加粗">加粗</button>
+                    <button type="button" class="md-tool" data-before="*" data-after="*" data-wrap="1" title="斜体">斜体</button>
+                    <button type="button" class="md-tool" data-before="## " title="小标题">标题</button>
+                    <button type="button" class="md-tool" data-before="&gt; " title="引用">引用</button>
+                    <button type="button" class="md-tool" data-before="- " title="无序列表">列表</button>
+                    <button type="button" class="md-tool" data-before="1. " title="有序列表">序号</button>
+                    <button type="button" class="md-tool" data-before="`" data-after="`" data-wrap="1" title="行内代码">代码</button>
+                    <button type="button" class="md-tool" data-before="[" data-after="](https://)" data-wrap="1" title="链接">链接</button>
+                </div>
+                <div class="md-tabs" id="mdTabs">
+                    <button type="button" class="md-tab active" data-mode="edit">编辑</button>
+                    <button type="button" class="md-tab" data-mode="preview">预览</button>
+                </div>
             </div>
             <textarea class="field-input md-input" id="subBody" placeholder="支持 Markdown。例如：&#10;## 小标题&#10;- 列表项&#10;**加粗**"></textarea>
             <div class="md-preview md" id="subPreview" hidden></div>
@@ -193,8 +203,12 @@
         function esc(t) { var d = document.createElement('div'); d.textContent = t == null ? '' : t; return d.innerHTML; }
 
         // 渲染前先对 Markdown 源文本做 HTML 转义：marked 默认放行原始 HTML，
-        // 而投稿是陌生人写的，必须先把 < > & 转义掉，杜绝 <script> 之类直接注入预览。
-        function escapeSource(md) { return esc(md); }
+        // 而投稿是陌生人写的，必须先把 & 和 < 转义掉，杜绝 <script> 之类直接注入预览。
+        // 只转 & 和 <（足以阻断标签）——不能转 >：否则行首的引用标记（> ）会被换成 &gt;
+        // 而失效，引用就渲染不出来。
+        function escapeSource(md) {
+            return String(md == null ? '' : md).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+        }
 
         // 渲染后再做一次最小消毒：兜住 marked 仍会输出的危险元素与属性（javascript: 链接、on* 事件等）
         function sanitizeHtml(html) {
@@ -255,6 +269,27 @@
         tabs.addEventListener('click', function (e) {
             var b = e.target.closest('.md-tab');
             if (b) setMode(b.getAttribute('data-mode'));
+        });
+
+        // ===== 正文 Markdown 快捷工具条：围绕光标 / 选区插入标记 =====
+        var tools = document.getElementById('mdTools');
+        tools.addEventListener('click', function (e) {
+            var b = e.target.closest('.md-tool');
+            if (!b) return;
+            if (ta.hidden) setMode('edit'); // 预览态下先切回编辑，插入才看得见
+            ta.focus();
+            var before = b.getAttribute('data-before') || '';
+            var after = b.getAttribute('data-after') || '';
+            var s = ta.selectionStart, en = ta.selectionEnd;
+            if (b.getAttribute('data-wrap') === '1') {
+                var sel = ta.value.slice(s, en) || '文字'; // 没选中就放占位词，并选中它方便直接改写
+                ta.setRangeText(before + sel + after, s, en, 'end');
+                ta.setSelectionRange(s + before.length, s + before.length + sel.length);
+            } else {
+                var ls = ta.value.lastIndexOf('\n', s - 1) + 1; // 行首前缀：作用到当前行开头
+                ta.setRangeText(before, ls, ls, 'end');
+                ta.setSelectionRange(s + before.length, en + before.length);
+            }
         });
 
         // ===== 提交 =====
@@ -325,6 +360,26 @@
             btn.disabled = false; btn.textContent = '提交投稿';
             showToast('已提交，等待审核');
         });
+
+        // ===== 栏目 / 系列建议项：从同目录 series.json 读取，只列「未完结」的系列 =====
+        // 与首页同一份数据；带 done:true 的系列已完结，不再建议投稿。取不到就留空，
+        // 输入框本身仍可自由填写。
+        async function loadSeriesOptions() {
+            var dl = document.getElementById('categoryList');
+            if (!dl) return;
+            try {
+                var r = await fetch('series.json', { cache: 'no-cache' });
+                if (!r.ok) return;
+                var data = JSON.parse(await r.text());
+                ((data && data.series) || []).forEach(function (s) {
+                    if (!s || s.done || !s.name) return;
+                    var opt = document.createElement('option');
+                    opt.value = s.name;
+                    dl.appendChild(opt);
+                });
+            } catch (e) { /* series.json 缺失/解析失败则保持空建议列表 */ }
+        }
+        loadSeriesOptions();
 
         setMode('edit');
     </script>
