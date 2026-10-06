@@ -1,0 +1,29 @@
+# 静态资源浏览器缓存分级
+#
+# 这个文件由 Cloudflare Workers Static Assets 解析，本身不会被当作资源提供。
+#
+# 为什么只能写在这里、不能写在 worker.js：默认路由下，请求 URL 一旦匹配到 public/ 里的文件，
+# Cloudflare 就直接返回该文件、不进入 Worker 代码（Worker 只在没匹配到文件时兜底）。所以
+# worker.js 里设的响应头对静态资源无效，反过来说这里也只管静态资源，/api/* 那些 Worker 生成的
+# 响应不吃这套规则（见 worker.js 里 json() 的 no-store）。
+#
+# Cloudflare 默认给静态资源的是 `Cache-Control: public, max-age=0, must-revalidate` + ETag：
+# 回访不重下全文，但每次仍要发一个条件请求换 304。下面只对「内容变了文件名也不变、且很久才动
+# 一次」的资源放宽 max-age，让回访直接命中本地缓存、连请求都不发。
+#
+# 不在这里写 HTML / issues.json / series.json：它们承担改版与新月刊上线，必须即时可见，
+# 保持默认的每次协商。
+
+# 第三方库（marked.min.js）：几乎不动，给 30 天。
+# 日后升级 marked 记得改文件名，否则老用户最多要等 30 天才会拿到新版
+/vendor/*
+  Cache-Control: public, max-age=2592000
+
+# 站点图标，同样基本不变
+/favicon.webp
+  Cache-Control: public, max-age=2592000
+
+# 月刊封面与正文：内容更新是覆盖同名文件（cover.webp、<slug>.md 都不改名），所以只给 1 天。
+# stale-while-revalidate 让过期后先拿旧的、后台静默拉新的，读者感知不到等待。
+/magazine/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800

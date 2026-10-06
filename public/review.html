@@ -225,7 +225,8 @@
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind); else bind();
     })();
     </script>
-    <script src="vendor/marked.min.js"></script>
+    <!-- defer：39KB 的渲染器不该阻塞口令门首屏；本页要解锁并拉到投稿后才渲染正文 -->
+    <script src="vendor/marked.min.js" defer></script>
 </head>
 <body>
     <header class="navbar">

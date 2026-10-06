@@ -317,8 +317,8 @@
         :root[data-theme="dark"] .series-chip { background:rgba(30,41,59,0.7); }
         :root[data-theme="dark"] .series-chip .sc-count.done { background:rgba(239, 68, 68, 0.16); color:#fca5a5; }
     </style>
-    <!-- Markdown 渲染：marked UMD（全局 window.marked），随站点自带，不依赖 CDN -->
-    <script src="vendor/marked.min.js"></script>
+    <!-- Markdown 渲染用的 marked UMD（全局 window.marked）不在这里同步加载：
+         它只在真正要显示正文时才需要，首屏加载它会白等，改由 loadMarked() 按需注入 -->
 </head>
 <body>
     <header class="navbar">
@@ -467,6 +467,22 @@
             }
             return doc.body.innerHTML;
         }
+        // marked 按需加载：首页/列表页用不到它（约 39KB），只有准备渲染正文时才注入
+        // 失败也 resolve，让 renderMarkdown 走纯文本兜底，不因为一个渲染器把文章卡住
+        var _markedLoading = null;
+        function loadMarked() {
+            if (window.marked) return Promise.resolve();
+            if (!_markedLoading) {
+                _markedLoading = new Promise(function (resolve) {
+                    var s = document.createElement('script');
+                    s.src = 'vendor/marked.min.js';
+                    s.onload = resolve;
+                    s.onerror = resolve;
+                    document.head.appendChild(s);
+                });
+            }
+            return _markedLoading;
+        }
         function renderMarkdown(md, baseDir) {
             var src = String(md == null ? '' : md);
             if (window.marked && typeof window.marked.parse === 'function') {
@@ -512,7 +528,7 @@
         async function loadIssues() {
             var container = document.getElementById('magContainer');
             try {
-                var r = await fetch(ISSUES_URL, { cache: 'no-store' });
+                var r = await fetch(ISSUES_URL, { cache: 'no-cache' });
                 if (!r.ok) throw new Error('请求失败 (' + r.status + ')');
                 DATA = await r.json();
 
@@ -561,7 +577,7 @@
             html += '<div class="featured" onclick="openReader(0)">';
             html += '  <div class="featured-cover">';
             html += '    <span class="issue-badge">最新一期 · 第' + esc(latest.number) + '期</span>';
-            html += '    <img alt="' + esc(latest.title) + '封面" loading="lazy" onerror="coverFallback(this)" data-cover-issue="0">';
+            html += '    <img alt="' + esc(latest.title) + '封面" loading="eager" fetchpriority="high" onerror="coverFallback(this)" data-cover-issue="0">';
             html += '  </div>';
             html += '  <div class="featured-content">';
             html += '    <div class="meta"><span>' + fmtDate(latest.date) + '</span><span class="dot"></span><span>第' + esc(latest.number) + '期</span></div>';
@@ -634,6 +650,8 @@
 
             // 预读前 3 篇文章，目录点击不再等
             preloadArticles(issue, 3);
+            // 进阅读器就必然要渲染正文，marked 与文章并行下载，别串在后面等
+            loadMarked();
 
             if (arts.length) selectArticle(0);
             else document.getElementById('articleArea').innerHTML = '<div class="article-loading">本期暂无文章</div>';
@@ -655,7 +673,8 @@
             var article = arts[idx];
             area.innerHTML = '<div class="article-loading"><span class="spinner"></span>正在加载文章</div>';
 
-            fetchArticle(currentIssue, article).then(function (md) {
+            fetchArticle(currentIssue, article).then(async function (md) {
+                await loadMarked(); // 正文要用 marked 渲染，这里再等它到货
                 renderArticle(article, md, idx, arts.length);
             }).catch(function (e) {
                 var url = articleUrl(currentIssue, article);
@@ -759,7 +778,7 @@
         // 加载系列卡片（同目录 series.json）
         async function loadSeries() {
             try {
-                var r = await fetch('series.json', { cache: 'no-store' });
+                var r = await fetch('series.json', { cache: 'no-cache' });
                 if (!r.ok) return;
                 var data = JSON.parse(await r.text());
                 if (!data || !data.series || !data.series.length) return;

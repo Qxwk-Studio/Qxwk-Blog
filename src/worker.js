@@ -49,7 +49,11 @@ export default {
 function json(data, status, headers) {
   return new Response(JSON.stringify(data), {
     status: status || 200,
-    headers: Object.assign({ 'Content-Type': 'application/json; charset=utf-8' }, headers || {}),
+    headers: Object.assign({
+      'Content-Type': 'application/json; charset=utf-8',
+      // 投稿与审核数据一律不进缓存：既防陈旧状态，也防审核内容被别人从缓存里读到
+      'Cache-Control': 'no-store',
+    }, headers || {}),
   });
 }
 
