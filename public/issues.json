@@ -3,12 +3,6 @@
     "name": "未阔月刊",
     "tagline": "记录青翔未阔工作室的思考与动态"
   },
-  "repo": {
-    "owner": "Qxwk-Studio",
-    "repo": "Qxwk-Files",
-    "branch": "main",
-    "path": "files-magazine"
-  },
   "issues": [
     {
       "id": "2026-09",

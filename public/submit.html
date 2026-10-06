@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>投稿 · 未阔月刊 - 青翔未阔工作室</title>
+    <meta name="description" content="向《未阔月刊》投稿，提交后由编辑审核。">
+    <meta name="referrer" content="no-referrer">
+    <link rel="icon" type="image/webp" href="/favicon.webp">
+    <style>
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --primary: #2563eb; --primary-hover: #1d4ed8;
+            --secondary: #0d9488;
+            --surface: #ffffff; --bg: #f8fafc;
+            --text-primary: #0f172a; --text-secondary: #64748b; --text-tertiary: #94a3b8;
+            --border: #e2e8f0; --navbar-bg: rgba(255, 255, 255, 0.8);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06); --shadow-md: 0 4px 16px rgba(0,0,0,0.08); --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+            --radius-sm: 8px; --radius-md: 14px;
+            --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+            --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+            --container: 1100px; --nav-height: 64px;
+            color-scheme: light; --primary-subtle: rgba(37,99,235,0.08);
+        }
+        :root[data-theme="dark"] {
+            color-scheme: dark;
+            --primary: #3b82f6; --primary-hover: #60a5fa;
+            --secondary: #14b8a6;
+            --primary-subtle: rgba(59,130,246,0.16);
+            --surface: #1e293b; --bg: #0f172a;
+            --text-primary: #e2e8f0; --text-secondary: #94a3b8; --text-tertiary: #64748b;
+            --border: #334155; --navbar-bg: rgba(15,23,42,0.8);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.4); --shadow-md: 0 4px 16px rgba(0,0,0,0.5); --shadow-lg: 0 12px 40px rgba(0,0,0,0.6);
+        }
+        :root[data-theme="dark"] .footer { background:#111827; }
+        :root[data-theme="dark"] .back-link { background:rgba(59,130,246,0.16); border-color:rgba(96,165,250,0.35); }
+        :root[data-theme="dark"] .back-link:hover { background:rgba(59,130,246,0.30); border-color:rgba(96,165,250,0.60); }
+        :root[data-theme="dark"] .field-input { background:var(--bg); }
+        :root[data-theme="dark"] .field-input:focus { background:var(--surface); }
+        :root[data-theme="dark"] .toast { background:var(--surface); }
+
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-sans); background: var(--bg); color: var(--text-primary);
+            line-height: 1.6; -webkit-font-smoothing: antialiased;
+            min-height: 100vh; display: flex; flex-direction: column;
+        }
+        .navbar { position:sticky; top:0; width:100%; height:var(--nav-height); z-index:100;
+            background:var(--navbar-bg); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+            border-bottom:1px solid var(--border); }
+        .navbar-inner { max-width:var(--container); margin:0 auto; padding:0 24px;
+            display:flex; align-items:center; justify-content:space-between; height:100%; gap:12px; }
+        .navbar-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text-primary);
+            font-weight:600; font-size:1.15rem; letter-spacing:0.3px; transition:opacity var(--transition); flex-shrink:0; }
+        .navbar-brand:hover { opacity:0.85; }
+        .brand-text { line-height: 1.25; }
+        .brand-text b { display: block; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; }
+        .brand-text span { display: block; font-size: 11px; color: var(--text-tertiary); }
+        .navbar-right { display:flex; align-items:center; gap:8px; min-width:0; }
+        .back-link { display:inline-flex; align-items:center; gap:6px; padding:8px 18px;
+            background:rgba(37,99,235,0.15); color:var(--text-primary); text-decoration:none;
+            border-radius:40px; font-size:0.88rem; font-weight:500;
+            backdrop-filter:blur(4px); border:1px solid rgba(147,197,253,0.35);
+            transition:all var(--transition); white-space:nowrap; }
+        .back-link:hover { background:rgba(37,99,235,0.3); border-color:rgba(147,197,253,0.6); transform:scale(1.02); }
+        .theme-toggle { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; padding:0; background:none; border:none; border-radius:50%; color:var(--text-primary); cursor:pointer; transition:background var(--transition), color var(--transition); flex-shrink:0; }
+        .theme-toggle:hover { background:var(--primary-subtle); color:var(--primary); }
+        .theme-toggle svg { width:22px; height:22px; }
+        .theme-toggle .icon-sun { display:none; }
+        :root[data-theme="dark"] .theme-toggle .icon-sun { display:block; }
+        :root[data-theme="dark"] .theme-toggle .icon-moon { display:none; }
+
+        .main { flex:1; padding:36px 24px 60px; }
+        .container { max-width:var(--container); margin:0 auto; }
+        .page-header { margin-bottom:24px; }
+        .page-header h1 { font-size:clamp(1.5rem,3vw,2rem); font-weight:700; color:var(--text-primary);
+            display:flex; align-items:center; gap:10px; }
+        .page-header .tagline { font-size:0.95rem; color:var(--text-secondary); margin-top:8px; }
+
+        .form-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+            padding:28px 30px; box-shadow:var(--shadow-sm); }
+        .form-card label { display:block; font-size:0.84rem; font-weight:600; color:var(--text-secondary); margin:18px 0 8px; }
+        .form-card label:first-child { margin-top:0; }
+        .field-input { width:100%; padding:11px 13px; border:1px solid var(--border); border-radius:var(--radius-sm);
+            font-size:0.92rem; color:var(--text-primary); background:var(--bg); font-family:var(--font-sans);
+            transition:border-color var(--transition), box-shadow var(--transition); }
+        .field-input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(37,99,235,0.12); background:var(--surface); }
+        textarea.md-input { min-height:320px; resize:vertical; line-height:1.7; font-family:var(--font-mono); font-size:0.9rem; }
+        .md-input[hidden] { display:none; }
+
+        /* 编辑 / 预览 切换 */
+        .md-tabs { display:inline-flex; gap:4px; padding:3px; background:var(--bg); border:1px solid var(--border);
+            border-radius:40px; margin-bottom:8px; }
+        .md-tab { border:none; background:none; cursor:pointer; font-family:var(--font-sans);
+            padding:5px 16px; border-radius:40px; font-size:0.8rem; color:var(--text-secondary); transition:all var(--transition); }
+        .md-tab:hover { color:var(--primary); }
+        .md-tab.active { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#fff; font-weight:500; }
+
+        /* Markdown 渲染区（预览 / 审核详情共用同一套排版） */
+        .md { font-size:0.95rem; line-height:1.8; color:var(--text-primary); word-break:break-word; }
+        .md h1, .md h2, .md h3, .md h4 { margin:18px 0 10px; line-height:1.35; font-weight:700; }
+        .md h1 { font-size:1.4rem; } .md h2 { font-size:1.2rem; } .md h3 { font-size:1.05rem; } .md h4 { font-size:0.98rem; }
+        /* pre-line：md 里手动换的行照原样断行，与首页正文排版一致 */
+        .md p { margin:0 0 12px; text-indent:2em; white-space:pre-line; }
+        .md ul, .md ol { margin:0 0 12px; padding-left:1.6em; }
+        .md li { margin:4px 0; }
+        /* 引用块已有左内边距，内部段落不再重复首行缩进（与首页正文一致） */
+        .md blockquote p { text-indent:0; }
+        .md blockquote { margin:0 0 12px; padding:6px 14px; border-left:3px solid var(--primary);
+            background:var(--primary-subtle); color:var(--text-secondary); border-radius:0 var(--radius-sm) var(--radius-sm) 0; }
+        .md code { font-family:var(--font-mono); font-size:0.88em; background:var(--bg); border:1px solid var(--border);
+            border-radius:4px; padding:1px 5px; }
+        .md pre { background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm);
+            padding:12px 14px; overflow:auto; margin:0 0 12px; }
+        .md pre code { background:none; border:none; padding:0; }
+        .md a { color:var(--primary); }
+        .md hr { border:none; border-top:1px solid var(--border); margin:16px 0; }
+        .md img { max-width:100%; }
+        .md-preview { min-height:320px; padding:14px 16px; background:var(--bg); border:1px solid var(--border);
+            border-radius:var(--radius-sm); }
+        .md-preview[hidden] { display:none; }
+        .md-plain { white-space:pre-wrap; word-break:break-word; font-family:var(--font-mono); font-size:0.88rem;
+            color:var(--text-primary); margin:0; }
+
+        .form-tip { font-size:0.78rem; color:var(--text-tertiary); margin-top:16px; line-height:1.8; }
+        .form-tip code { font-family:var(--font-mono); background:var(--bg); border:1px solid var(--border);
+            border-radius:4px; padding:1px 5px; font-size:0.96em; }
+        .form-tip b { color:var(--text-secondary); }
+        .actions { display:flex; justify-content:flex-end; gap:10px; margin-top:22px; }
+        .btn { display:inline-flex; align-items:center; justify-content:center; border:none; border-radius:40px;
+            padding:10px 22px; font-size:0.9rem; font-weight:500; cursor:pointer; font-family:var(--font-sans);
+            text-decoration:none; transition:all var(--transition); }
+        .btn-primary { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#fff; }
+        .btn-primary:hover { box-shadow:var(--shadow-md); }
+        .btn-primary:disabled { opacity:0.6; cursor:not-allowed; }
+        .btn-ghost { background:var(--bg); color:var(--text-secondary); border:1px solid var(--border); }
+        .btn-ghost:hover { background:var(--border); color:var(--text-primary); }
+
+        .toast { position:fixed; top:-60px; left:50%; transform:translateX(-50%);
+            background:var(--surface); color:var(--text-primary); border:1px solid var(--border);
+            padding:12px 24px; border-radius:var(--radius-sm); font-size:0.9rem; font-weight:500;
+            z-index:3000; opacity:0; pointer-events:none;
+            box-shadow:0 4px 20px rgba(0,0,0,0.1);
+            display:flex; align-items:center; gap:10px; max-width:calc(100vw - 32px);
+            transition:top 0.35s ease, opacity 0.35s ease; }
+        .toast svg { color:var(--primary); flex-shrink:0; }
+        .toast.show { top:80px; opacity:1; }
+
+        .footer { background:#0f172a; text-align:center; padding:28px 24px;
+            color:var(--text-tertiary); font-size:0.85rem; border-top:1px solid rgba(255,255,255,0.06); }
+        .footer-copy { opacity:0.6; }
+
+        @media (max-width:640px) {
+            .navbar-inner { padding:0 16px; }
+            .main { padding:24px 16px 40px; }
+            .form-card { padding:22px 18px; }
+            .actions { flex-wrap:wrap; }
+        }
+    </style>
+    <meta name="color-scheme" content="light dark">
+    <script>
+    /* 主题切换：localStorage('theme') 优先，其次跟随系统 prefers-color-scheme；同步写入 <html> 的 data-theme 防闪烁 */
+    (function () {
+        var KEY = 'theme';
+        var root = document.documentElement;
+        var mq = window.matchMedia('(prefers-color-scheme: dark)');
+        function system() { return mq.matches ? 'dark' : 'light'; }
+        function stored() { try { var v = localStorage.getItem(KEY); return (v === 'dark' || v === 'light') ? v : null; } catch (e) { return null; } }
+        function apply(t) { root.setAttribute('data-theme', t); }
+        function current() { return stored() || system(); }
+        apply(current());
+        function toggle() { var next = current() === 'dark' ? 'light' : 'dark'; apply(next); try { localStorage.setItem(KEY, next); } catch (e) {} }
+        function bind() {
+            var btn = document.getElementById('themeToggle');
+            if (btn) btn.addEventListener('click', toggle);
+            if (mq.addEventListener) mq.addEventListener('change', function (e) { if (!stored()) apply(e.matches ? 'dark' : 'light'); });
+            else if (mq.addListener) mq.addListener(function (e) { if (!stored()) apply(e.matches ? 'dark' : 'light'); });
+            window.addEventListener('storage', function (e) { if (e.key === KEY) apply(current()); });
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind); else bind();
+    })();
+    </script>
+    <script src="vendor/marked.min.js"></script>
+</head>
+<body>
+    <header class="navbar">
+        <div class="navbar-inner">
+            <a href="/" class="navbar-brand">
+                <img src="/favicon.webp" alt="青翔未阔工作室" width="28" height="28" style="border-radius:5px;flex-shrink:0;">
+                <span class="brand-text"><b>未阔月刊</b><span>随心记录，定期成刊</span></span>
+            </a>
+            <div class="navbar-right">
+                <button class="theme-toggle" id="themeToggle" type="button" aria-label="切换主题" title="切换主题">
+                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+                <a href="/" class="back-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
+                    返回月刊
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main"><div class="container">
+        <div class="page-header">
+            <h1>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                向未阔月刊投稿
+            </h1>
+            <div class="tagline">提交后由编辑审核，通过后将在新一期发布</div>
+        </div>
+
+        <div class="form-card">
+            <label for="subTitle">标题</label>
+            <input class="field-input" id="subTitle" maxlength="100" placeholder="请输入文章标题（1-100 字）" autocomplete="off">
+
+            <label for="subAuthor">作者名</label>
+            <input class="field-input" id="subAuthor" maxlength="40" placeholder="你的署名（1-40 字）" autocomplete="off">
+
+            <label for="subContact">联系方式（选填）</label>
+            <input class="field-input" id="subContact" maxlength="120" placeholder="邮箱 / QQ / 微信，方便编辑联系你（0-120 字）" autocomplete="off">
+
+            <label for="subCategory">栏目 / 系列（选填）</label>
+            <input class="field-input" id="subCategory" maxlength="40" list="categoryList" placeholder="可从建议里选，也可自由填写（0-40 字）" autocomplete="off">
+            <datalist id="categoryList">
+                <option value="呓林"></option>
+                <option value="尖塔小课堂"></option>
+                <option value="经天纬地谈科技"></option>
+                <option value="舌尖上的MC"></option>
+                <option value="七圣研究所"></option>
+                <option value="煦言"></option>
+                <option value="卡丘大食堂"></option>
+            </datalist>
+
+            <label for="subBody">正文（Markdown）</label>
+            <div class="md-tabs" id="mdTabs">
+                <button type="button" class="md-tab active" data-mode="edit">编辑</button>
+                <button type="button" class="md-tab" data-mode="preview">预览</button>
+            </div>
+            <textarea class="field-input md-input" id="subBody" placeholder="支持 Markdown。例如：&#10;## 小标题&#10;- 列表项&#10;**加粗**"></textarea>
+            <div class="md-preview md" id="subPreview" hidden></div>
+
+            <p class="form-tip">
+                <b>本页不收图片。</b>正文里的图片请单独发给编辑，或先用图床外链写成 <code>![](https://…)</code>。<br>
+                写作约定：<code>## 小标题</code>、<code>- 列表</code>、<code>1. 有序列表</code>、<code>&gt; 引用</code>、<code>**加粗**</code>、<code>`行内代码`</code>、用三个反引号包起的代码块。<br>
+                要分新段落请<b>空一行</b>：Markdown 里单换行会被并进同一段，那样只有段落第一行会有首行缩进。
+            </p>
+
+            <div class="actions">
+                <button type="button" class="btn btn-ghost" id="subReset">清空</button>
+                <button type="button" class="btn btn-primary" id="subSubmit">提交投稿</button>
+            </div>
+        </div>
+    </div></div>
+
+    <footer class="footer"><div class="footer-copy">2026 青翔未阔工作室</div></footer>
+
+    <div class="toast" id="toast"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span id="toastText"></span></div>
+
+    <script>
+        // ===== 文本 / 消毒工具 =====
+        function esc(t) { var d = document.createElement('div'); d.textContent = t == null ? '' : t; return d.innerHTML; }
+
+        // 渲染前先对 Markdown 源文本做 HTML 转义：marked 默认放行原始 HTML，
+        // 而投稿是陌生人写的，必须先把 < > & 转义掉，杜绝 <script> 之类直接注入预览。
+        function escapeSource(md) { return esc(md); }
+
+        // 渲染后再做一次最小消毒：兜住 marked 仍会输出的危险元素与属性（javascript: 链接、on* 事件等）
+        function sanitizeHtml(html) {
+            var box = document.createElement('div');
+            box.innerHTML = html;
+            var bad = ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'link', 'meta'];
+            bad.forEach(function (tag) {
+                var els = box.querySelectorAll(tag);
+                for (var i = els.length - 1; i >= 0; i--) { if (els[i].parentNode) els[i].parentNode.removeChild(els[i]); }
+            });
+            var all = box.querySelectorAll('*');
+            for (var k = 0; k < all.length; k++) {
+                var el = all[k], attrs = el.attributes;
+                for (var j = attrs.length - 1; j >= 0; j--) {
+                    var name = attrs[j].name;
+                    if (/^on/i.test(name)) { el.removeAttribute(name); continue; }
+                    if (name === 'href' || name === 'src' || name === 'xlink:href') {
+                        var v = String(attrs[j].value || '').replace(/\s+/g, '').toLowerCase();
+                        if (v.indexOf('javascript:') === 0 || v.indexOf('data:text/html') === 0) el.removeAttribute(name);
+                    }
+                }
+            }
+            return box.innerHTML;
+        }
+
+        // Markdown → HTML。marked 只 parse 一次；若 vendor 脚本没加载成功，
+        // 退化成 <pre> 显示纯文本，绝不抛错。
+        function mdToHtml(md) {
+            var src = escapeSource(md);
+            if (window.marked && typeof window.marked.parse === 'function') {
+                try { return sanitizeHtml(window.marked.parse(src)); } catch (e) { /* 落到下面的兜底 */ }
+            }
+            return '<pre class="md-plain">' + src + '</pre>';
+        }
+
+        // ===== Toast =====
+        function showToast(msg) {
+            var t = document.getElementById('toast');
+            document.getElementById('toastText').textContent = msg;
+            t.classList.add('show');
+            clearTimeout(t._timer);
+            t._timer = setTimeout(function () { t.classList.remove('show'); }, 2500);
+        }
+
+        // ===== 编辑 / 预览 切换 =====
+        var ta = document.getElementById('subBody');
+        var preview = document.getElementById('subPreview');
+        var tabs = document.getElementById('mdTabs');
+
+        function setMode(mode) {
+            var isPreview = mode === 'preview';
+            if (isPreview) { preview.innerHTML = mdToHtml(ta.value); }
+            ta.hidden = isPreview;
+            preview.hidden = !isPreview;
+            var btns = tabs.querySelectorAll('.md-tab');
+            for (var i = 0; i < btns.length; i++) btns[i].classList.toggle('active', btns[i].getAttribute('data-mode') === mode);
+        }
+        tabs.addEventListener('click', function (e) {
+            var b = e.target.closest('.md-tab');
+            if (b) setMode(b.getAttribute('data-mode'));
+        });
+
+        // ===== 提交 =====
+        var btn = document.getElementById('subSubmit');
+
+        function fields() {
+            return {
+                title: document.getElementById('subTitle').value.trim(),
+                author: document.getElementById('subAuthor').value.trim(),
+                contact: document.getElementById('subContact').value.trim(),
+                category: document.getElementById('subCategory').value.trim(),
+                body: ta.value.trim(),
+            };
+        }
+
+        // 与后端同一套长度/必填规则，前端先拦一遍，不合法就不发请求
+        function validate(f) {
+            if (f.title.length < 1 || f.title.length > 100) return '标题需为 1-100 个字符';
+            if (f.author.length < 1 || f.author.length > 40) return '作者名需为 1-40 个字符';
+            if (f.contact.length > 120) return '联系方式最多 120 个字符';
+            if (f.category.length > 40) return '栏目/系列最多 40 个字符';
+            if (f.body.length < 10) return '正文至少需要 10 个字符';
+            if (f.body.length > 100000) return '正文过长（最多 100000 个字符）';
+            return '';
+        }
+
+        function resetForm() {
+            ['subTitle', 'subAuthor', 'subContact', 'subCategory', 'subBody'].forEach(function (id) {
+                document.getElementById(id).value = '';
+            });
+            setMode('edit');
+        }
+
+        document.getElementById('subReset').addEventListener('click', resetForm);
+
+        btn.addEventListener('click', async function () {
+            var f = fields();
+            var err = validate(f);
+            if (err) { showToast(err); return; }
+
+            btn.disabled = true; btn.textContent = '提交中…';
+            var res;
+            try {
+                res = await fetch('/api/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(f),
+                });
+            } catch (e) {
+                btn.disabled = false; btn.textContent = '提交投稿';
+                showToast('网络错误，请重试');
+                return;
+            }
+
+            if (res.status === 429) {
+                var d429 = await res.json().catch(function () { return {}; });
+                btn.disabled = false; btn.textContent = '提交投稿';
+                showToast(d429.error || '提交过于频繁，请稍后再试');
+                return;
+            }
+            var data = await res.json().catch(function () { return {}; });
+            if (!res.ok) {
+                btn.disabled = false; btn.textContent = '提交投稿';
+                showToast(data.error || '提交失败，请稍后再试');
+                return;
+            }
+            resetForm();
+            btn.disabled = false; btn.textContent = '提交投稿';
+            showToast('已提交，等待审核');
+        });
+
+        setMode('edit');
+    </script>
+</body>
+</html>

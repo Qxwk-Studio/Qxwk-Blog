@@ -1,8 +1,5 @@
 User-agent: *
-Disallow: /account
-Disallow: /monthly/issues.json
-Disallow: /monthly/series.json
-Disallow: /monthly/review
-Disallow: /monthly/submit
+Disallow: /issues.json
+Disallow: /series.json
 
 Sitemap: https://blog.qxwkstudio.top/sitemap.xml
