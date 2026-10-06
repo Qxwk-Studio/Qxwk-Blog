@@ -1,5 +1,12 @@
 {
   "series": [
+        {
+      "name": "保卫辩证法",
+      "icon": "⚖️",
+      "count": 2,
+      "lastIssue": "2026-10",
+      "lastTitle": "论螃蟹效应"
+    },
     {
       "name": "呓林",
       "icon": "🌳",
@@ -13,13 +20,6 @@
       "count": 3,
       "lastIssue": "2026-10",
       "lastTitle": "塔2猎手的能力牌解说"
-    },
-    {
-      "name": "保卫辩证法",
-      "icon": "⚖️",
-      "count": 2,
-      "lastIssue": "2026-10",
-      "lastTitle": "论螃蟹效应"
     },
     {
       "name": "卡丘大食堂",
