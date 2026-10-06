@@ -52,8 +52,7 @@
         .tab:hover { border-color:var(--primary); color:var(--primary); }
         .tab.active { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#fff; border-color:transparent; }
 
-        /* ===== 列表 + 详情两栏 ===== */
-        .review-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); gap:20px; align-items:start; }
+        /* ===== 投稿列表（单栏铺满，点击弹出详情弹窗）===== */
         .list { display:flex; flex-direction:column; gap:12px; }
         .sub-item { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
             padding:16px 18px; cursor:pointer; transition:box-shadow var(--transition), transform var(--transition), border-color var(--transition); }
@@ -72,11 +71,17 @@
         .empty { text-align:center; padding:70px 20px; color:var(--text-tertiary); font-size:0.92rem;
             background:var(--surface); border:1px dashed var(--border); border-radius:var(--radius-md); }
 
-        .detail-col { position:sticky; top:calc(var(--nav-height) + 16px);
-            max-height:calc(100vh - var(--nav-height) - 32px); overflow-y:auto;
-            background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
-            box-shadow:var(--shadow-sm); }
-        .detail-empty { padding:70px 20px; text-align:center; color:var(--text-tertiary); font-size:0.9rem; }
+        /* ===== 详情弹窗（沿用首页阅读弹窗的遮罩 + 居中卡片）===== */
+        .review-modal { display:none; position:fixed; inset:0; z-index:2000; background:rgba(15,23,42,0.6);
+            backdrop-filter:blur(6px); justify-content:center; align-items:flex-start; padding:28px 24px; overflow-y:auto; }
+        .review-modal.active { display:flex; }
+        .review-dialog { background:var(--surface); border-radius:var(--radius-md); max-width:860px; width:100%;
+            margin:auto; box-shadow:var(--shadow-lg); animation:rdIn 0.25s ease; overflow:hidden; }
+        @keyframes rdIn { from { transform:translateY(20px); opacity:0.5; } to { transform:translateY(0); opacity:1; } }
+        .modal-close { flex-shrink:0; width:36px; height:36px; border-radius:50%; background:var(--bg);
+            border:1px solid var(--border); color:var(--text-secondary); cursor:pointer;
+            display:flex; align-items:center; justify-content:center; transition:all var(--transition); }
+        .modal-close:hover { border-color:var(--primary); color:var(--primary); }
         .detail-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap;
             padding:20px 24px 14px; border-bottom:1px solid var(--border); }
         .detail-head h2 { font-size:1.2rem; font-weight:700; color:var(--text-primary); line-height:1.35; flex:1; min-width:0; }
@@ -130,6 +135,8 @@
 
         @media (max-width:640px) {
             .main { padding:24px 16px 40px; }
+            .review-modal { padding:0; }
+            .review-dialog { border-radius:0; min-height:100vh; margin:0; }
             .detail-head, .detail-meta, .detail-sec, .detail-actions { padding-left:18px; padding-right:18px; }
         }
     </style>
@@ -200,14 +207,14 @@
                 <button class="tab" data-s="rejected" type="button">驳回</button>
             </div>
 
-            <div class="review-layout">
-                <div class="list-col"><div class="list" id="list"></div></div>
-                <div class="detail-col" id="detailCol">
-                    <div class="detail-empty">从左侧选择一条投稿查看详情</div>
-                </div>
-            </div>
+            <div class="list-col"><div class="list" id="list"></div></div>
         </div>
     </div></div>
+
+    <!-- 详情弹窗：点列表项弹出，遮罩样式与首页阅读弹窗一致 -->
+    <div class="review-modal" id="reviewModal">
+        <div class="review-dialog" id="reviewDialog"></div>
+    </div>
 
     <footer class="footer"><div class="footer-copy">2026 青翔未阔工作室</div></footer>
 
@@ -331,7 +338,7 @@
             gateView.innerHTML = '';
             panelView.hidden = false;
             curId = null;
-            document.getElementById('detailCol').innerHTML = '<div class="detail-empty">从左侧选择一条投稿查看详情</div>';
+            closeModal();
             loadSubs();
         }
 
@@ -346,7 +353,7 @@
             var tabs = document.querySelectorAll('.tab');
             for (var i = 0; i < tabs.length; i++) tabs[i].classList.toggle('active', tabs[i] === b);
             curId = null;
-            document.getElementById('detailCol').innerHTML = '<div class="detail-empty">从左侧选择一条投稿查看详情</div>';
+            closeModal();
             loadSubs();
         });
 
@@ -400,11 +407,14 @@
             var s = data.submission;
             curId = s.id;
 
-            var col = document.getElementById('detailCol');
-            col.innerHTML =
+            var dlg = document.getElementById('reviewDialog');
+            dlg.innerHTML =
                 '<div class="detail-head">' +
                     '<span class="status ' + statusClass(s.status) + '">' + esc(statusLabel(s.status)) + '</span>' +
                     '<h2>' + esc(s.title) + '</h2>' +
+                    '<button type="button" class="modal-close" id="modalClose" aria-label="关闭">' +
+                        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
+                    '</button>' +
                 '</div>' +
                 '<div class="detail-meta">' +
                     '<span>作者：' + esc(s.author) + '</span>' +
@@ -427,14 +437,30 @@
             // 用 value 属性赋值而非拼进 innerHTML，避免审稿意见里的引号破坏标签
             document.getElementById('dNote').value = s.review_note || '';
 
-            col.querySelectorAll('[data-act]').forEach(function (b) {
+            dlg.querySelectorAll('[data-act]').forEach(function (b) {
                 b.addEventListener('click', function () { doReview(b.getAttribute('data-act'), b); });
             });
+            document.getElementById('modalClose').addEventListener('click', closeModal);
+            reviewModal.classList.add('active');
 
             // 高亮当前列表行
             var items = document.querySelectorAll('#list .sub-item');
             for (var i = 0; i < items.length; i++) items[i].classList.toggle('active', items[i].dataset.id === String(curId));
         }
+
+        // ===== 弹窗开关 =====
+        var reviewModal = document.getElementById('reviewModal');
+        function closeModal() {
+            reviewModal.classList.remove('active');
+            document.getElementById('reviewDialog').innerHTML = '';
+            curId = null;
+            var items = document.querySelectorAll('#list .sub-item');
+            for (var i = 0; i < items.length; i++) items[i].classList.remove('active');
+        }
+        // 点遮罩空白处关闭
+        reviewModal.addEventListener('click', function (e) { if (e.target === reviewModal) closeModal(); });
+        // Esc 关闭
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && reviewModal.classList.contains('active')) closeModal(); });
 
         async function doReview(status, btnEl) {
             if (curId == null) return;
