@@ -3,16 +3,23 @@
     {
       "name": "呓林",
       "icon": "🌳",
-      "count": 2,
-      "lastIssue": "2026-09",
-      "lastTitle": "18岁，被世界推出家门"
+      "count": 4,
+      "lastIssue": "2026-10",
+      "lastTitle": "不能粘贴的人生"
     },
     {
       "name": "尖塔小课堂",
       "icon": "🗼",
+      "count": 3,
+      "lastIssue": "2026-10",
+      "lastTitle": "塔2猎手的能力牌解说"
+    },
+    {
+      "name": "保卫辩证法",
+      "icon": "⚖️",
       "count": 2,
-      "lastIssue": "2026-09",
-      "lastTitle": "塔2猎手输出牌选取思路"
+      "lastIssue": "2026-10",
+      "lastTitle": "论螃蟹效应"
     },
     {
       "name": "卡丘大食堂",
@@ -39,9 +46,9 @@
     {
       "name": "篝火夜话",
       "icon": "🔥",
-      "count": 8,
-      "lastIssue": "2024-05",
-      "lastTitle": "谈死亡"
+      "count": 9,
+      "lastIssue": "2026-10",
+      "lastTitle": "一半是我，一半是我"
     },
     {
       "name": "梦月之兮小说角",
