@@ -116,6 +116,10 @@
         .md a { color:var(--primary); }
         .md hr { border:none; border-top:1px solid var(--border); margin:16px 0; }
         .md img { max-width:100%; }
+        /* 表格：marked 输出的 <table> 无自带样式，不补就只剩文字没有框线 */
+        .md table { width:100%; border-collapse:collapse; margin:0 0 12px; font-size:0.9rem; }
+        .md th, .md td { border:1px solid var(--border); padding:8px 10px; text-align:left; }
+        .md th { background:var(--bg); font-weight:600; }
         .md-plain { white-space:pre-wrap; word-break:break-word; font-family:var(--font-mono); font-size:0.88rem;
             color:var(--text-primary); margin:0; }
 

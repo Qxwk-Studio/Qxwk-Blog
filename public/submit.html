@@ -34,11 +34,26 @@
 
         /* 正文编辑条：左侧常用 Markdown 快捷项，右侧「编辑 / 预览」切换（右对齐） */
         .editor-bar { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
-        .md-tools { display:inline-flex; gap:2px; padding:3px; background:var(--bg); border:1px solid var(--border);
-            border-radius:40px; flex-wrap:wrap; }
+        /* 工具面板：与下方正文输入框同圆角（radius-sm），换行时看起来才是一个整块 */
+        .md-tools { display:inline-flex; align-items:center; gap:2px; padding:4px; background:var(--bg);
+            border:1px solid var(--border); border-radius:var(--radius-sm); flex-wrap:wrap; }
         .md-tool { border:none; background:none; cursor:pointer; font-family:var(--font-sans);
-            padding:5px 11px; border-radius:40px; font-size:0.8rem; color:var(--text-secondary); transition:all var(--transition); }
+            padding:5px 10px; border-radius:var(--radius-sm); font-size:0.8rem; line-height:1.2;
+            white-space:nowrap; color:var(--text-secondary);
+            transition:color var(--transition), background var(--transition); }
         .md-tool:hover { color:var(--primary); background:var(--surface); }
+        .md-tool:active { color:var(--primary); background:var(--surface); transform:translateY(1px); }
+        .md-tool.strike { text-decoration:line-through; }
+        /* 常用项与「更多」区之间的细分隔线 */
+        .md-divider { flex:0 0 auto; width:1px; height:16px; margin:0 3px; background:var(--border); }
+        /* 「更多」开关始终在最右，展开的格式插在它与常用项之间 */
+        .md-more { border:none; background:none; cursor:pointer; font-family:var(--font-sans);
+            padding:5px 10px; border-radius:var(--radius-sm); font-size:0.8rem; line-height:1.2;
+            white-space:nowrap; color:var(--primary); font-weight:500;
+            transition:color var(--transition), background var(--transition); }
+        .md-more:hover { background:var(--surface); }
+        .md-extra { display:inline-flex; align-items:center; gap:2px; flex-wrap:wrap; }
+        .md-extra[hidden] { display:none; }
         .md-tabs { display:inline-flex; gap:4px; padding:3px; background:var(--bg); border:1px solid var(--border);
             border-radius:40px; }
         .md-tab { border:none; background:none; cursor:pointer; font-family:var(--font-sans);
@@ -66,6 +81,10 @@
         .md a { color:var(--primary); }
         .md hr { border:none; border-top:1px solid var(--border); margin:16px 0; }
         .md img { max-width:100%; }
+        /* 表格：marked 输出的 <table> 无自带样式，不补就只剩文字没有框线 */
+        .md table { width:100%; border-collapse:collapse; margin:0 0 12px; font-size:0.9rem; }
+        .md th, .md td { border:1px solid var(--border); padding:8px 10px; text-align:left; }
+        .md th { background:var(--bg); font-weight:600; }
         .md-preview { min-height:320px; padding:14px 16px; background:var(--bg); border:1px solid var(--border);
             border-radius:var(--radius-sm); }
         .md-preview[hidden] { display:none; }
@@ -170,8 +189,17 @@
                     <button type="button" class="md-tool" data-before="&gt; " title="引用">引用</button>
                     <button type="button" class="md-tool" data-before="- " title="无序列表">列表</button>
                     <button type="button" class="md-tool" data-before="1. " title="有序列表">序号</button>
-                    <button type="button" class="md-tool" data-before="`" data-after="`" data-wrap="1" title="行内代码">代码</button>
-                    <button type="button" class="md-tool" data-before="[" data-after="](https://)" data-wrap="1" title="链接">链接</button>
+                    <span class="md-divider" aria-hidden="true"></span>
+                    <!-- 默认收起：代码块 / 图片 / 分割线 / 表格，插在最右「更多」开关之前 -->
+                    <span class="md-extra" id="mdExtra" hidden>
+                        <button type="button" class="md-tool" data-before="---&#10;" title="分割线">分割线</button>
+                        <button type="button" class="md-tool strike" data-before="~~" data-after="~~" data-wrap="1" title="删除线">删除线</button>
+                        <button type="button" class="md-tool" data-before="`" data-after="`" data-wrap="1" title="行内代码">代码</button>
+                        <button type="button" class="md-tool" data-before="&#10;```&#10;" data-after="&#10;```&#10;" data-wrap="1" title="代码块">代码块</button>
+                        <button type="button" class="md-tool" data-before="![" data-after="](https://)" data-wrap="1" title="图片（需图床外链）">图片</button>
+                        <button type="button" class="md-tool" data-before="| 列1 | 列2 |&#10;| --- | --- |&#10;| 单元格 | 单元格 |&#10;" title="表格">表格</button>
+                    </span>
+                    <button type="button" class="md-more" id="mdMoreToggle" aria-expanded="false" title="更多格式">更多 ▾</button>
                 </div>
                 <div class="md-tabs" id="mdTabs">
                     <button type="button" class="md-tab active" data-mode="edit">编辑</button>
@@ -183,7 +211,6 @@
 
             <p class="form-tip">
                 <b>本页不收图片。</b>正文里的图片请单独发给编辑，或先用图床外链写成 <code>![](https://…)</code>。<br>
-                写作约定：<code>## 小标题</code>、<code>- 列表</code>、<code>1. 有序列表</code>、<code>&gt; 引用</code>、<code>**加粗**</code>、<code>`行内代码`</code>、用三个反引号包起的代码块。<br>
                 要分新段落请<b>空一行</b>：Markdown 里单换行会被并进同一段，那样只有段落第一行会有首行缩进。
             </p>
 
@@ -290,6 +317,17 @@
                 ta.setRangeText(before, ls, ls, 'end');
                 ta.setSelectionRange(s + before.length, en + before.length);
             }
+        });
+
+        // 「更多 ▾」：工具条默认一行，展开后才露出代码块 / 图片 / 分割线 / 表格
+        var moreBtn = document.getElementById('mdMoreToggle');
+        var mdExtra = document.getElementById('mdExtra');
+        moreBtn.addEventListener('click', function () {
+            var open = mdExtra.hidden; // 当前收起 → 本次点开
+            mdExtra.hidden = !open;
+            moreBtn.textContent = open ? '收起 ▴' : '更多 ▾';
+            moreBtn.title = open ? '收起' : '更多格式';
+            moreBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
         });
 
         // ===== 提交 =====

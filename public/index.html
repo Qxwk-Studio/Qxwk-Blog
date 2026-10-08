@@ -483,7 +483,8 @@
                 var latestArts = (issues[0] && issues[0].articles) || [];
                 if (latestArts.length) fetchArticle(issues[0], latestArts[0]).catch(function () {});
 
-                // 分享深链：?issue=<期id>&article=<slug> 自动打开阅读弹窗定位到该篇
+                // 分享深链：?issue=<期id>&article=<序号> 自动打开阅读弹窗定位到该篇
+                // article 只用文章序号（slug 的 "NN-" 前缀，如 01），链接更短
                 var sp = new URLSearchParams(location.search);
                 var issueParam = sp.get('issue');
                 if (issueParam) {
@@ -496,7 +497,9 @@
                             if (artParam) {
                                 var arts = issues[i].articles || [];
                                 for (var j = 0; j < arts.length; j++) {
-                                    if (String(arts[j].slug) === String(artParam)) { startIdx = j; break; }
+                                    var s = String(arts[j].slug);
+                                    // 契约：article 为文章序号（slug 的 "NN-" 前缀，如 01）
+                                    if (s.split('-')[0] === String(artParam)) { startIdx = j; break; }
                                 }
                             }
                             openReader(i, startIdx);
@@ -547,7 +550,7 @@
                     html += '  <div class="card-body">';
                     html += '    <div class="card-date">' + fmtDate(is.date) + ' · 共 ' + ac + ' 篇</div>';
                     html += '    <div class="card-title">' + esc(is.title) + '</div>';
-                    html += '    <div class="card-summary">' + esc(is.summary) + '</div>';
+                    html += '    <div class="card-summary" title="' + esc(is.summary) + '">' + esc(is.summary) + '</div>';
                     html += '  </div>';
                     html += '</div>';
                 }
@@ -666,7 +669,7 @@
             area.insertAdjacentHTML('beforeend', html);
         }
 
-        // 分享本篇：生成 ?issue=<期id>&article=<slug> 深链
+        // 分享本篇：生成 ?issue=<期id>&article=<序号> 深链
         // 基址取当前文档所在目录（new URL('.')）而非写死 location.origin + '/'：
         // 子路径部署（如 GitHub Pages 项目站点 /Qxwk-Blog/）时分享链接才不会丢掉前缀
         function shareArticle() {
@@ -674,9 +677,10 @@
             var arts = currentIssue.articles || [];
             var a = arts[currentArtIdx];
             if (!a) return;
+            // article 只取 slug 的序号前缀（01、02…），链接更短
             var url = new URL('.', location.href).href +
                 '?issue=' + encodeURIComponent(currentIssue.id) +
-                '&article=' + encodeURIComponent(a.slug);
+                '&article=' + encodeURIComponent(String(a.slug).split('-')[0]);
             var data = { title: currentIssue.title, text: a.title, url: url };
             if (navigator.share) { navigator.share(data).catch(function () {}); }
             else if (navigator.clipboard && navigator.clipboard.writeText) {

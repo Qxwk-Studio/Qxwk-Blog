@@ -41,7 +41,10 @@
     --border:#334155; --navbar-bg:rgba(15,23,42,0.8);
     --shadow-sm:0 1px 3px rgba(0,0,0,0.4); --shadow-md:0 4px 16px rgba(0,0,0,0.5); --shadow-lg:0 12px 40px rgba(0,0,0,0.6);
 }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth;
+    /* 移动端内核（QQ/X5、UC 等）会自行放大正文字号；锁死文本缩放，避免文字撑出容器后被
+       overflow:hidden 从右侧裁掉（表现为「右侧没边距」）。与 Class-Assistant 保持一致 */
+    -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body {
     font-family: var(--font-sans); background: var(--bg); color: var(--text-primary);
     line-height: 1.6; -webkit-font-smoothing: antialiased;
