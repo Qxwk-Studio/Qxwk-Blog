@@ -1,6 +1,6 @@
 {
   "series": [
-        {
+    {
       "name": "保卫辩证法",
       "icon": "⚖️",
       "count": 2,
@@ -20,14 +20,6 @@
       "count": 3,
       "lastIssue": "2026-10",
       "lastTitle": "塔2猎手的能力牌解说"
-    },
-    {
-      "name": "卡丘大食堂",
-      "icon": "🍳",
-      "count": 1,
-      "lastIssue": "2024-04",
-      "lastTitle": "链接世界的崩溃",
-      "done": true
     },
     {
       "name": "经天纬地谈科技",
@@ -50,6 +42,21 @@
       "lastIssue": "2026-10",
       "lastTitle": "一半是我，一半是我"
     },
+        {
+      "name": "舌尖上的MC",
+      "icon": "🍜",
+      "count": 4,
+      "lastIssue": "2026-09",
+      "lastTitle": "第四集 醇香"
+    },
+    {
+      "name": "卡丘大食堂",
+      "icon": "🍳",
+      "count": 1,
+      "lastIssue": "2024-04",
+      "lastTitle": "链接世界的崩溃",
+      "done": true
+    },
     {
       "name": "梦月之兮小说角",
       "icon": "🌙",
@@ -65,13 +72,6 @@
       "lastIssue": "2024-01",
       "lastTitle": "这场歌剧，名为罪人舞步旋",
       "done": true
-    },
-    {
-      "name": "舌尖上的MC",
-      "icon": "🍜",
-      "count": 4,
-      "lastIssue": "2026-09",
-      "lastTitle": "第四集 醇香"
     },
     {
       "name": "泰拉看点",
