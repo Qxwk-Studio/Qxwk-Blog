@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>佳作集 · 未阔月刊 - 青翔未阔工作室</title>
+    <meta name="description" content="《未阔月刊》佳作集——编辑从往期中挑出的佳作刊目，可直接在本页阅读原文。">
+    <meta name="referrer" content="no-referrer">
+    <link rel="icon" type="image/webp" href="/favicon.webp">
+    <style>
+        /* 本页刻意不引全站 style.css：这是一张独立的「刊目」，走纸面编辑风格，
+           不套用其它页面的卡片网格与共用外壳。断链换来的自由，代价是这里要自带
+           reset 与主题令牌 —— 主题机制仍沿用全站约定（localStorage('theme') +
+           <html data-theme>），读者在别处选的明暗偏好到这儿依然生效。 */
+        *, *::before, *::after { box-sizing: border-box; }
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        body { margin: 0; }
+        [hidden] { display: none !important; }
+
+        :root {
+            --paper: #faf8f4;          /* 纸面：暖白，与全站的冷灰 --bg 拉开距离 */
+            --ink: #1b1d23;
+            --ink-soft: #43474f;       /* 推荐语 / 正文 */
+            --muted: #6a6e79;          /* 元信息，仍达 WCAG AA（约 4.7:1） */
+            --rule: rgba(27, 29, 35, 0.14);
+            --shade: rgba(27, 29, 35, 0.035);
+            --accent: #2563eb;         /* 沿用工作室主色，只作点睛，不铺面 */
+            --accent-soft: rgba(37, 99, 235, 0.08);
+            --serif: 'Noto Serif SC', 'Songti SC', 'Source Han Serif SC', Georgia, 'Times New Roman', serif;
+            --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        }
+        :root[data-theme="dark"] {
+            --paper: #141519;
+            --ink: #ecebe6;
+            --ink-soft: #c3c6cc;
+            --muted: #9aa0aa;
+            --rule: rgba(236, 235, 230, 0.16);
+            --shade: rgba(236, 235, 230, 0.05);
+            --accent: #7aa2f7;         /* 暗底上提亮主色，对比约 7:1 */
+            --accent-soft: rgba(122, 162, 247, 0.10);
+        }
+
+        body { background: var(--paper); color: var(--ink); font-family: var(--sans); line-height: 1.6; }
+
+        /* 纸面肌理：一层极淡的噪点压在整页之上（feTurbulence 生成的 SVG，无外链）。
+           不用图片、不引第三方，纯 CSS 数据 URI；multiply 让浅色纸上出现纸浆颗粒感 */
+        body::before {
+            content: ''; position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.05;
+            mix-blend-mode: multiply;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+        :root[data-theme="dark"] body::before { opacity: 0.07; mix-blend-mode: screen; }
+
+        .page { position: relative; max-width: 880px; margin: 0 auto; padding: 40px 28px 72px; }
+        /* 纸面不是一块死板的纯色：顶部有一道几乎察觉不到的暗角，像纸被压过 */
+        .page::before { content: ''; position: absolute; inset: 0; pointer-events: none;
+            background: linear-gradient(180deg, var(--shade), transparent 200px); }
+
+        /* 竖排书眉：宽屏时贴在视口左侧，是这页最像「书」的一笔；窄屏隐藏免得挤正文 */
+        .running-head { display: none; }
+        @media (min-width: 1120px) {
+            .running-head { display: block; position: fixed; left: 30px; top: 50%; transform: translateY(-50%);
+                writing-mode: vertical-rl; font-family: var(--serif); font-size: 0.76rem; letter-spacing: 0.5em;
+                color: var(--muted); opacity: 0.55; user-select: none; }
+        }
+
+        /* ===== 报头 ===== */
+        .masthead-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 56px; }
+        .back, .theme, .share { font-family: var(--sans); font-size: 0.78rem; letter-spacing: 0.04em;
+            color: var(--muted); text-decoration: none; background: none; border: none; padding: 0;
+            cursor: pointer; transition: color 0.18s ease; }
+        .back:hover, .theme:hover, .share:hover { color: var(--accent); }
+        .back:focus-visible, .theme:focus-visible, .share:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 2px; }
+        .theme svg, .share svg { width: 15px; height: 15px; vertical-align: -2px; }
+        .theme .icon-moon { display: none; }
+        :root[data-theme="dark"] .theme .icon-moon { display: inline; }
+        :root[data-theme="dark"] .theme .icon-sun { display: none; }
+
+        /* 内联图标：随文字字号走、继承 currentColor，不引图标字体也不加外链 */
+        .ico { width: 1em; height: 1em; vertical-align: -0.14em; margin-right: 0.32em; flex: none; }
+        /* 报头徽记：双圈，与上方小标题（eyebrow）同排、居中对齐 */
+        /* 行内清零 eyebrow 的下边距：否则 flex 居中按含 margin 的盒算，文字会被顶高半个间距，
+           圈就会看着顶对齐而不是中心对齐；间距改由行容器出 */
+        .eyebrow-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+        .eyebrow-row .eyebrow { margin: 0; }
+        .seal { width: 38px; height: 38px; color: var(--muted); opacity: 0.9; flex: none; }
+        .eyebrow { margin: 0 0 14px; font-size: 0.74rem; letter-spacing: 0.22em; color: var(--muted); }
+        .masthead h1 { margin: 0; font-family: var(--serif); font-weight: 600;
+            font-size: clamp(2.6rem, 7vw, 4.2rem); line-height: 1.05; letter-spacing: 0.06em; }
+        .deck { margin: 20px 0 0; max-width: 34em; font-size: 0.95rem; line-height: 1.85; color: var(--ink-soft); }
+        /* 报刊传统的粗细双线：上 2px 下 1px，比一条实线更像出版物 */
+        .rule { height: 5px; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--ink);
+            opacity: 0.9; margin: 32px 0 12px; }
+        .count { margin: 0 0 8px; font-size: 0.76rem; letter-spacing: 0.14em; color: var(--muted); }
+
+        /* ===== 索引：编号栏 + 内容栏，行与行用细分隔线，不用卡片 ===== */
+        .index { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+        .entry { border-bottom: 1px solid var(--rule); }
+        .entry > a { display: grid; grid-template-columns: 3.2rem 1fr; gap: 24px; align-items: start;
+            padding: 28px 8px 28px 0; text-decoration: none; color: inherit;
+            transition: background-color 0.22s ease, padding-left 0.22s ease; }
+        .entry > a:hover { background: var(--accent-soft); padding-left: 12px; }
+        .entry > a:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+        .num { font-family: var(--serif); font-size: 1.5rem; line-height: 1.25; color: var(--muted);
+            font-variant-numeric: tabular-nums; transition: color 0.22s ease; }
+        .entry > a:hover .num { color: var(--accent); }
+
+        .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+            font-size: 0.74rem; letter-spacing: 0.12em; color: var(--muted); }
+        .meta .series { color: var(--ink-soft); }
+        .meta .sep { opacity: 0.45; }
+        /* 期号与系列同色：主色留给交互（悬停/链接），元信息不抢眼 */
+        .meta .tag { color: var(--ink-soft); }
+
+        .title { display: block; margin: 10px 0 0; font-family: var(--serif); font-weight: 600;
+            font-size: clamp(1.55rem, 2.9vw, 2rem); line-height: 1.32; letter-spacing: 0.01em;
+            transition: color 0.22s ease, transform 0.22s ease; }
+        .entry > a:hover .title { color: var(--accent); transform: translateX(3px); }
+        /* 推荐语与正文同款首行缩进两字，读起来更像书里的引子 */
+        .note { display: block; margin: 12px 0 0; max-width: 46em; font-size: 0.92rem; line-height: 1.85;
+            color: var(--ink-soft); text-indent: 2em; }
+
+        .byline { display: flex; align-items: baseline; gap: 10px; margin: 16px 0 0;
+            font-size: 0.78rem; color: var(--muted); }
+        .byline .author { color: var(--ink-soft); letter-spacing: 0.02em; }
+        .byline .dot { opacity: 0.45; }
+        .byline .issue-id { font-variant-numeric: tabular-nums; }
+        .byline .more { margin-left: auto; color: var(--accent); letter-spacing: 0.06em;
+            opacity: 0; transform: translateX(-6px); transition: opacity 0.22s ease, transform 0.22s ease; }
+        /* 悬停/键盘聚焦才浮出「展卷」，平时不抢视线；粗指针设备（触屏）不靠悬停，直接常显 */
+        .entry > a:hover .more, .entry > a:focus-visible .more { opacity: 1; transform: none; }
+        @media (hover: none) { .byline .more { opacity: 0.8; transform: none; } }
+
+        /* ===== 阅读视图：本页直接排版正文，不跳回首页 ===== */
+        .read-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 44px; }
+        .read-actions { display: flex; align-items: center; gap: 18px; }
+        .read-top .share svg { margin-right: 4px; }
+        .read-top .open-mag { font-size: 0.78rem; letter-spacing: 0.04em; color: var(--accent);
+            text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.18s ease; }
+        .read-top .open-mag:hover { border-bottom-color: var(--accent); }
+        .read-head { border-bottom: 1px solid var(--rule); padding-bottom: 26px; margin-bottom: 34px; }
+        .read-title { margin: 0; font-family: var(--serif); font-weight: 600;
+            font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.25; letter-spacing: 0.03em; }
+
+        /* 正文排版：衬线、行高 2、首行缩进 2em——中文书籍的读法 */
+        .md { font-family: var(--serif); font-size: 1.02rem; line-height: 2; color: var(--ink); word-break: break-word; }
+        .md p { margin: 0 0 1em; text-indent: 2em; white-space: pre-line; }
+        .md h1, .md h2, .md h3, .md h4 { font-family: var(--serif); font-weight: 600; line-height: 1.4;
+            margin: 1.8em 0 0.7em; text-indent: 0; }
+        .md h1 { font-size: 1.5rem; } .md h2 { font-size: 1.25rem; }
+        .md h3 { font-size: 1.1rem; } .md h4 { font-size: 1rem; }
+        .md ul, .md ol { margin: 0 0 1em; padding-left: 1.6em; }
+        .md li { margin: 0.35em 0; }
+        /* 引用块：极淡主色底 + 左侧主色竖线，底色与边线同源，明暗主题各有一套 --accent-soft */
+        .md blockquote { margin: 0 0 1em; padding: 0.75em 1.1em;
+            border-left: 2px solid var(--accent); background: var(--accent-soft); border-radius: 2px;
+            color: var(--ink-soft); }
+        /* 引用块已有左内边距，内部段落不再重复首行缩进 */
+        .md blockquote p { text-indent: 0; }
+        .md code { font-family: var(--mono); font-size: 0.88em; background: var(--shade);
+            padding: 0.1em 0.35em; border-radius: 2px; }
+        .md pre { background: var(--shade); border: 1px solid var(--rule); border-radius: 2px;
+            padding: 14px 16px; overflow: auto; margin: 0 0 1.2em; }
+        .md pre code { background: none; padding: 0; }
+        .md a { color: var(--accent); text-underline-offset: 3px; }
+        .md img { max-width: 100%; display: block; margin: 1.6em auto; }
+        /* 分割线用居中三点，比一条直线更合纸质刊物的调子 */
+        .md hr { border: none; text-align: center; margin: 1.8em 0; }
+        .md hr::before { content: '· · ·'; letter-spacing: 0.6em; color: var(--muted); }
+        .md table { width: 100%; border-collapse: collapse; margin: 0 0 1.2em; font-size: 0.92rem; }
+        .md th, .md td { border: 1px solid var(--rule); padding: 8px 12px; text-align: left; }
+        .md th { background: var(--shade); font-weight: 600; }
+        /* HTML 篇：整篇交给 iframe，作者自带样式与脚本，本页只给一个框 */
+        .md-html { display: block; }
+        .paper-frame { display: block; width: 100%; height: 75vh; border: 1px solid var(--rule); border-radius: 2px; background: var(--paper); }
+
+        /* ===== 状态：加载 / 空 / 出错，沿用同一套纸面语言 ===== */
+        .state { padding: 56px 0; font-size: 0.92rem; color: var(--muted); text-indent: 0; }
+        .state.loading::before { content: ''; display: inline-block; width: 14px; height: 14px; margin-right: 10px;
+            border: 1.5px solid var(--rule); border-top-color: var(--accent); border-radius: 50%;
+            animation: spin 0.8s linear infinite; vertical-align: -2px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .state.error { color: #b91c1c; }
+        :root[data-theme="dark"] .state.error { color: #fca5a5; }
+
+        /* ===== 刊末 ===== */
+        .colophon { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--rule);
+            font-size: 0.74rem; letter-spacing: 0.1em; color: var(--muted); text-align: center; }
+        .colophon .orn { width: 15px; height: 15px; color: var(--muted); opacity: 0.7; margin-bottom: 8px; }
+
+        /* 入场：轻微上浮，按序号错开；尊重系统的减弱动效设置 */
+        @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+        .entry, .read-head { animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        @media (prefers-reduced-motion: reduce) {
+            .entry, .read-head { animation: none; }
+            .entry > a, .title, .num, .byline .more { transition: none; }
+        }
+
+        @media (max-width: 640px) {
+            .page { padding: 28px 20px 56px; }
+            .masthead-top { margin-bottom: 40px; }
+            .entry > a { grid-template-columns: 2.2rem 1fr; gap: 16px; padding: 22px 0; }
+            .entry > a:hover { padding-left: 6px; }
+            .num { font-size: 1.2rem; }
+            .byline { flex-wrap: wrap; }
+            .read-top { margin-bottom: 30px; }
+            .md { font-size: 1rem; }
+        }
+    </style>
+    <meta name="color-scheme" content="light dark">
+    <script>
+    /* 主题切换：与全站同一套约定（localStorage('theme') 优先，其次跟随系统），
+       偏好跨页面通用，所以这里虽换了皮，机制保持一致 */
+    (function () {
+        var KEY = 'theme';
+        var root = document.documentElement;
+        var mq = window.matchMedia('(prefers-color-scheme: dark)');
+        function system() { return mq.matches ? 'dark' : 'light'; }
+        function stored() { try { var v = localStorage.getItem(KEY); return (v === 'dark' || v === 'light') ? v : null; } catch (e) { return null; } }
+        function apply(t) { root.setAttribute('data-theme', t); }
+        function current() { return stored() || system(); }
+        apply(current());
+        function toggle() { var next = current() === 'dark' ? 'light' : 'dark'; apply(next); try { localStorage.setItem(KEY, next); } catch (e) {} }
+        function bind() {
+            var btn = document.getElementById('themeToggle');
+            if (btn) btn.addEventListener('click', toggle);
+            if (mq.addEventListener) mq.addEventListener('change', function (e) { if (!stored()) apply(e.matches ? 'dark' : 'light'); });
+            else if (mq.addListener) mq.addListener(function (e) { if (!stored()) apply(e.matches ? 'dark' : 'light'); });
+            window.addEventListener('storage', function (e) { if (e.key === KEY) apply(current()); });
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind); else bind();
+    })();
+    </script>
+    <!-- 正文渲染管线与首页共用一份（含 sanitizeHtml 安全边界） -->
+    <script src="/lib/magazine.js"></script>
+</head>
+<body>
+    <span class="running-head" aria-hidden="true">未阔月刊 · 佳作集</span>
+
+    <div class="page">
+        <!-- ===== 刊目视图 ===== -->
+        <section id="indexView">
+            <header class="masthead">
+                <div class="masthead-top">
+                    <a class="back" href="../">← 返回月刊</a>
+                    <button class="theme" id="themeToggle" type="button" aria-label="切换主题" title="切换主题">
+                        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                        <span>主题</span>
+                    </button>
+                </div>
+                <div class="eyebrow-row">
+                    <svg class="seal" viewBox="0 0 44 44" role="img" aria-label="未阔月刊徽记">
+                        <circle cx="22" cy="22" r="20" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                        <circle cx="22" cy="22" r="16.4" fill="none" stroke="currentColor" stroke-width="0.7" opacity="0.5"/>
+                    </svg>
+                    <p class="eyebrow">青翔未阔工作室 · 未阔月刊</p>
+                </div>
+                <h1>佳作集</h1>
+                <p class="deck">编辑从往期月刊中挑出的值得一读之作。按刊目顺序排列，点开任一条即可在本页展卷阅读。</p>
+                <div class="rule"></div>
+                <p class="count" id="featCount">刊目载入中…</p>
+            </header>
+
+            <ol class="index" id="featIndex">
+                <li class="state loading">正在载入刊目…</li>
+            </ol>
+        </section>
+
+        <!-- ===== 阅读视图：点刊目条后在本页展开，不跳走 ===== -->
+        <article id="readView" hidden>
+            <div class="read-top">
+                <button class="back" id="backToIndex" type="button">← 返回刊目</button>
+                <div class="read-actions">
+                    <button class="share" id="shareBtn" type="button" aria-label="复制本篇链接">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                        分享
+                    </button>
+                    <a class="open-mag" id="openInMagazine" href="../">在月刊中打开 ↗</a>
+                </div>
+            </div>
+            <header class="read-head">
+                <p class="eyebrow" id="readMeta"></p>
+                <h1 class="read-title" id="readTitle"></h1>
+            </header>
+            <div class="md" id="readBody"></div>
+        </article>
+
+        <footer class="colophon">
+            <svg class="orn" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l1.9 7.6 7.6 1.9-7.6 1.9L12 21.5l-1.9-7.6L2.5 12l7.6-1.9z" fill="currentColor"/></svg>
+            <br>— 刊末 —<br>2026 青翔未阔工作室 · 未阔月刊
+        </footer>
+    </div>
+
+    <script>
+        // 站点根：用 URL 解析而非写死 '/'，子路径部署下也正确（同首页分享链接）
+        var HOME = new URL('../', location.href).href;
+        var FEATURED = [];
+        var CURRENT = null;             // 当前展开的篇目，分享按钮据此拼深链
+        var esc = Mag.esc;
+
+        function pad(n) { return (n < 10 ? '0' : '') + n; }
+        function deepLink(f) {
+            // 契约：article 为文章序号（slug 的 "NN" 前缀），与首页阅读器深链一致
+            return '?issue=' + encodeURIComponent(f.issue) + '&article=' + encodeURIComponent(f.article);
+        }
+        function findEntry(issue, art) {
+            for (var i = 0; i < FEATURED.length; i++) {
+                if (String(FEATURED[i].issue) === String(issue) && String(FEATURED[i].article) === String(art)) return FEATURED[i];
+            }
+            return null;
+        }
+
+        // 刊目条用的小图标（inline SVG，继承 currentColor，随文字缩放）
+        var ICO = {
+            book: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+            hash: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>',
+            user: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+            cal: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'
+        };
+
+        // 编号倒序：首条给最高号（total），往下递减，与刊目自上而下的优先度一致
+        function entryHtml(f, i, total) {
+            var meta = (f.series ? '<span class="series">' + ICO.book + esc(f.series) + '</span>' : '') +
+                (f.series && f.tag ? '<span class="sep">·</span>' : '') +
+                (f.tag ? '<span class="tag">' + ICO.hash + esc(f.tag) + '</span>' : '');
+            return '<li class="entry" style="animation-delay:' + (i * 45) + 'ms">' +
+                '<a href="' + esc(deepLink(f)) + '" data-issue="' + esc(f.issue) + '" data-article="' + esc(f.article) + '">' +
+                    '<span class="num" aria-hidden="true">' + pad(total - i) + '</span>' +
+                    '<span class="body">' +
+                        (meta ? '<span class="meta">' + meta + '</span>' : '') +
+                        '<span class="title">' + esc(f.title) + '</span>' +
+                        (f.note ? '<span class="note">' + esc(f.note) + '</span>' : '') +
+                        '<span class="byline">' +
+                            '<span class="author">' + ICO.user + esc(f.author || '佚名') + '</span>' +
+                            '<span class="dot">·</span>' +
+                            '<span class="issue-id">' + ICO.cal + esc(f.issue) + '</span>' +
+                            '<span class="more">展卷 →</span>' +
+                        '</span>' +
+                    '</span>' +
+                '</a>' +
+                '</li>';
+        }
+
+        function render(list) {
+            var index = document.getElementById('featIndex');
+            document.getElementById('featCount').textContent = list.length ? '共 ' + list.length + ' 篇' : '';
+            if (!list.length) {
+                index.innerHTML = '<li class="state">刊目暂空——编辑还没有挑出优秀内容。</li>';
+                return;
+            }
+            var html = '';
+            for (var i = 0; i < list.length; i++) html += entryHtml(list[i], i, list.length);
+            index.innerHTML = html;
+        }
+
+        // ===== 视图切换 =====
+        function showIndex() {
+            document.getElementById('readView').hidden = true;
+            document.getElementById('indexView').hidden = false;
+            document.title = '佳作集 · 未阔月刊 - 青翔未阔工作室';
+        }
+
+        function openArticle(f) {
+            CURRENT = f;
+            document.getElementById('indexView').hidden = true;
+            document.getElementById('readView').hidden = false;
+            var rv = document.getElementById('readView');
+            // 重播入场动画：重新插入节点比重设 animation 更省心
+            var head = rv.querySelector('.read-head');
+            if (head) { head.style.animation = 'none'; void head.offsetWidth; head.style.animation = ''; }
+            window.scrollTo(0, 0);
+
+            document.getElementById('readMeta').textContent =
+                [f.series, f.tag, f.author].filter(Boolean).join(' · ');
+            document.getElementById('readTitle').textContent = f.title || '';
+            document.getElementById('openInMagazine').href = HOME + deepLink(f);
+            document.title = (f.title || '佳作集') + ' · 未阔月刊';
+
+            var body = document.getElementById('readBody');
+            var dir = new URL('../magazine/' + f.issue + '/', location.href).href;
+
+            // HTML 篇（type: "html"）：与首页一样整篇交给 iframe，作者自带样式与脚本
+            if (f.type === 'html') {
+                body.className = 'md-html';
+                body.innerHTML = '<iframe class="paper-frame" src="' + esc(dir + f.slug + '.html') +
+                    '" sandbox="allow-scripts allow-same-origin allow-popups" loading="lazy"></iframe>';
+                return;
+            }
+
+            body.className = 'md';
+            body.innerHTML = '<p class="state loading">正在取文…</p>';
+            fetch(dir + encodeURIComponent(f.slug) + '.md')
+                .then(function (r) { if (!r.ok) throw new Error('请求失败 (' + r.status + ')'); return r.text(); })
+                .then(function (md) {
+                    return Mag.loadMarked().then(function () {
+                        body.innerHTML = Mag.renderMarkdown(md, dir);
+                    });
+                })
+                .catch(function (e) {
+                    body.innerHTML = '<p class="state error">正文载入失败：' + esc(e.message) + '</p>';
+                });
+        }
+
+        function closeArticle() {
+            showIndex();
+        }
+
+        // 分享：只把本篇深链写进剪贴板，点开在本页直接展开；不再改地址栏（浏览时 URL 始终停在 /featured/）
+        function shareArticle() {
+            if (!CURRENT) return;
+            var url = new URL('.', location.href).href + deepLink(CURRENT);
+            var btn = document.getElementById('shareBtn');
+            function feedback(msg) {
+                if (!btn) return;
+                if (!btn._label) btn._label = btn.innerHTML;      // 存含图标的原文，回填时恢复
+                btn.textContent = msg;
+                clearTimeout(btn._t);
+                btn._t = setTimeout(function () { btn.innerHTML = btn._label; }, 1800);
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(
+                    function () { feedback('链接已复制'); },
+                    function () { feedback('复制失败'); }
+                );
+            } else { feedback('复制失败'); }
+        }
+
+        // 刊目条：左键无修饰键时拦下来原地渲染，保留 href 让中键/新标签页仍走深链
+        document.getElementById('featIndex').addEventListener('click', function (e) {
+            var a = e.target.closest ? e.target.closest('a') : null;
+            if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+            var f = findEntry(a.getAttribute('data-issue'), a.getAttribute('data-article'));
+            if (!f) return;
+            e.preventDefault();
+            openArticle(f);
+        });
+        document.getElementById('backToIndex').addEventListener('click', closeArticle);
+        document.getElementById('shareBtn').addEventListener('click', shareArticle);
+
+        // 渲染库 marked 在首屏加载完成后再后台预热，点开刊目条即可直接渲染。
+        // loadMarked 缓存同一 Promise，openArticle 里再调无副作用。
+        window.addEventListener('load', function () { Mag.loadMarked(); });
+
+        // no-cache：挑篇随时可能改，别让浏览器拿旧的（与 issues.json 的即时可见口径一致）
+        fetch('featured.json', { cache: 'no-cache' })
+            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+            .then(function (d) {
+                FEATURED = d.featured || [];
+                render(FEATURED);
+                // 支持被直接深链进来：/featured/?issue=..&article=..
+                var sp = new URLSearchParams(location.search);
+                var issue = sp.get('issue'), article = sp.get('article');
+                if (issue && article) {
+                    var f = findEntry(issue, article);
+                    if (f) openArticle(f);
+                }
+            })
+            .catch(function (e) {
+                document.getElementById('featCount').textContent = '';
+                document.getElementById('featIndex').innerHTML =
+                    '<li class="state error">刊目载入失败：' + esc(e.message) + '</li>';
+            });
+    </script>
+</body>
+</html>

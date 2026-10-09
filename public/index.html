@@ -19,6 +19,8 @@
         .page-head-left { min-width:0; }
         /* .read-btn 自带 align-self:flex-start，会顶到行首；此处覆盖为贴底，与副标题对齐 */
         .page-head-row .read-btn { align-self:flex-end; flex-shrink:0; }
+        /* 右上角按钮组：佳作集 + 投稿 */
+        .page-head-actions { display:flex; align-items:flex-end; gap:10px; flex-shrink:0; }
         .page-header h1 { font-size:clamp(1.5rem,3vw,2rem); font-weight:700; color:var(--text-primary);
             display:flex; align-items:center; gap:10px; }
         .page-header .tagline { font-size:0.95rem; color:var(--text-secondary); margin-top:8px; }
@@ -74,6 +76,9 @@
             text-decoration:none; border-radius:40px; font-size:0.88rem; font-weight:500; cursor:pointer; border:none;
             transition:transform var(--transition), box-shadow var(--transition); }
         .read-btn:hover { transform:scale(1.03); box-shadow:0 6px 20px rgba(37,99,235,0.3); }
+        /* 次级按钮（投稿）：不用渐变底色，避免与主按钮「佳作集」抢主次 */
+        .read-btn.ghost { background:var(--surface); color:var(--primary); border:1px solid var(--border); }
+        .read-btn.ghost:hover { box-shadow:var(--shadow-sm); }
 
         /* ===== Past issues ===== */
         .section-label { display:flex; align-items:center; gap:8px; font-size:1rem; font-weight:600;
@@ -133,8 +138,11 @@
         .reader-body { display:flex; gap:0; }
         .reader-toc { flex-shrink:0; width:260px; padding:30px 20px 30px 32px; border-right:1px solid var(--border);
             position:sticky; top:0; align-self:flex-start; max-height:calc(100vh - 56px); overflow-y:auto; }
-        .reader-toc .toc-label { font-size:0.78rem; font-weight:600; color:var(--text-tertiary);
-            letter-spacing:0.5px; margin-bottom:14px; padding-left:4px; }
+        /* 目录头：桌面端只是一行标题（toc-current / toc-arrow 隐藏），移动端才变成可点的下拉开关 */
+        .reader-toc .toc-head { display:flex; align-items:center; gap:8px; width:100%; margin:0 0 14px; padding:0 0 0 4px;
+            border:none; background:none; font-family:var(--font-sans); text-align:left; cursor:default; }
+        .reader-toc .toc-label { font-size:0.78rem; font-weight:600; color:var(--text-tertiary); letter-spacing:0.5px; }
+        .reader-toc .toc-current, .reader-toc .toc-arrow { display:none; }
         .reader-toc .toc-list { display:flex; flex-direction:column; gap:2px; }
         .toc-item { display:block; text-align:left; padding:9px 12px; background:none; border:none; cursor:pointer;
             border-radius:var(--radius-sm); font-size:0.86rem; color:var(--text-secondary); line-height:1.4;
@@ -177,6 +185,10 @@
         .article-content th, .article-content td { border:1px solid var(--border); padding:8px 10px; text-align:left; }
         .article-content th { background:var(--bg); font-weight:600; }
         .article-content a { color:var(--primary); }
+        /* HTML 篇：整篇自包含文档嵌在 iframe 里，固定高度 + 内部滚动（不依赖被嵌页面配合报高）。
+           沙箱策略见 renderArticle 的 sandbox 属性 */
+        .article-content .article-html { width:100%; height:75vh; border:1px solid var(--border);
+            border-radius:var(--radius-sm); display:block; }
         .article-loading { text-align:center; padding:48px 20px; color:var(--text-secondary); font-size:0.88rem; }
         .article-error { background:#fef2f2; border:1px solid #fecaca; color:#b91c1c;
             padding:14px 18px; border-radius:var(--radius-sm); font-size:0.86rem; line-height:1.6; }
@@ -201,6 +213,9 @@
         }
         @media (max-width:640px) {
             .main { padding:24px 16px 40px; }
+            /* 按钮组多了一个（佳作集），窄屏放不下就整行下移、右对齐 */
+            .page-head-row { flex-wrap:wrap; }
+            .page-head-actions { width:100%; justify-content:flex-end; }
             .series-bar { padding:14px 14px; margin-bottom:22px; }
             .series-chip { flex:1 0 100%; padding:8px 12px; }
             .issues-grid { grid-template-columns:1fr; gap:16px; }
@@ -209,10 +224,23 @@
             .reader-dialog { border-radius:0; min-height:100vh; }
             .reader-titlewrap { padding:20px 20px; }
             .reader-body { flex-direction:column; }
-            .reader-toc { width:100%; position:static; max-height:none; border-right:none; border-bottom:1px solid var(--border);
-                padding:16px 20px; }
-            .reader-toc .toc-list { flex-direction:row; overflow-x:auto; gap:6px; padding-bottom:4px; }
-            .toc-item { white-space:nowrap; flex-shrink:0; }
+            /* 目录：移动端收成一个「点击展开」的下拉开关，不再横向滚动占宽度 */
+            .reader-toc { width:100%; position:relative; max-height:none; overflow:visible;
+                border-right:none; border-bottom:1px solid var(--border); padding:12px 16px; }
+            .reader-toc .toc-head { cursor:pointer; gap:10px; padding:9px 12px; margin:0;
+                border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg); }
+            .reader-toc .toc-label { flex-shrink:0; }
+            .reader-toc .toc-current { display:block; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
+                white-space:nowrap; font-size:0.84rem; font-weight:500; color:var(--text-primary); }
+            .reader-toc .toc-arrow { display:block; flex-shrink:0; font-size:0.8rem; color:var(--text-tertiary);
+                transition:transform var(--transition); }
+            .reader-toc.open .toc-arrow { transform:rotate(180deg); }
+            .reader-toc .toc-list { display:none; }
+            .reader-toc.open .toc-list { display:flex; flex-direction:column; gap:2px; position:absolute;
+                left:16px; right:16px; top:calc(100% - 8px); z-index:6; max-height:min(50vh,320px); overflow-y:auto;
+                padding:6px; background:var(--surface); border:1px solid var(--border);
+                border-radius:var(--radius-sm); box-shadow:var(--shadow-md); }
+            .toc-item { white-space:normal; flex-shrink:0; }
             .reader-article { padding:22px 20px 32px; }
         }
         </style>
@@ -281,10 +309,16 @@
                         </h1>
                         <div class="tagline" id="magTagline">记录青翔未阔工作室的思考与博客</div>
                     </div>
-                    <a href="submit.html" class="read-btn">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-                        投稿
-                    </a>
+                    <div class="page-head-actions">
+                        <a href="featured/" class="read-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 6.26 6.6.6-5 4.4 1.5 6.74L12 16.9 5.99 20l1.5-6.74-5-4.4 6.6-.6z"/></svg>
+                            佳作集
+                        </a>
+                        <a href="submit.html" class="read-btn ghost">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                            投稿
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -321,8 +355,12 @@
                 <div class="reader-titlewrap" id="readerTitlewrap"></div>
             </div>
             <div class="reader-body">
-                <aside class="reader-toc">
-                    <div class="toc-label">本期目录</div>
+                <aside class="reader-toc" id="readerToc">
+                    <button type="button" class="toc-head" id="tocToggle" aria-expanded="false" aria-controls="tocList">
+                        <span class="toc-label">本期目录</span>
+                        <span class="toc-current" id="tocCurrent"></span>
+                        <span class="toc-arrow" aria-hidden="true">▾</span>
+                    </button>
                     <div class="toc-list" id="tocList"></div>
                 </aside>
                 <div class="reader-article">
@@ -334,6 +372,8 @@
 
     <div class="toast" id="toast"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span id="toastText"></span></div>
 
+    <!-- 正文渲染管线（esc / sanitizeHtml / loadMarked / renderMarkdown）与「佳作集」页共用 -->
+    <script src="lib/magazine.js"></script>
     <script>
         var ISSUES_URL = 'issues.json';
         var DATA = null;
@@ -341,7 +381,9 @@
         var currentArtIdx = 0;     // index within issue.articles
         var articleCache = {};     // key: issueId + '/' + slug -> Promise<Markdown 正文文本>（存 Promise 才能合并并发请求）
 
-        function esc(t) { var d = document.createElement('div'); d.textContent = t == null ? '' : t; return d.innerHTML; }
+        // 渲染管线来自 lib/magazine.js，取到本地名沿用，调用处不必改
+        var esc = Mag.esc, loadMarked = Mag.loadMarked, renderMarkdown = Mag.renderMarkdown;
+
         function fmtDate(s) {
             var m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
             if (!m) return s;
@@ -351,9 +393,12 @@
         // ===== 本地内容路径 =====
         // 文章与封面已随站点一起放在 public/magazine/<期id>/ 下
         // 用相对路径（不带前导 /），兼容子路径部署（如 GitHub Pages 项目站点）
+        // 文章文件扩展名由 article.type 决定：type: "html" 的篇取 .html（整篇由 iframe 承载，
+        // 不做 Markdown 渲染），其余（含缺省）一律按 .md。slug 本身不带扩展名。
         function articleUrl(issue, article) {
             if (!issue || !article) return '';
-            return 'magazine/' + encodeURIComponent(issue.id) + '/' + encodeURIComponent(article.slug) + '.md';
+            var ext = article.type === 'html' ? '.html' : '.md';
+            return 'magazine/' + encodeURIComponent(issue.id) + '/' + encodeURIComponent(article.slug) + ext;
         }
         function coverUrl(issue) {
             if (!issue || !issue.cover) return '';
@@ -367,60 +412,8 @@
         function coverFallback(el) { if (el) el.style.opacity = '0'; }
 
         // ===== Markdown 渲染 =====
-        // marked 解析后的 HTML 做一次最小消毒：投稿正文来自外部，必须挡住 <script>、内联事件、javascript: URL
-        var BAD_TAGS = { SCRIPT:1, STYLE:1, IFRAME:1, OBJECT:1, EMBED:1, FORM:1, INPUT:1, BUTTON:1, LINK:1, META:1, BASE:1 };
-        // 正文里的相对图片/链接是相对「文章所在目录」的（md 与插图同放 magazine/<期id>/ 下）
-        // 浏览器默认按文档基址解析，会把 pic.png 指到站点根，故在此手动补前缀
-        function resolveRel(v, baseDir) {
-            if (!v || !baseDir) return v;
-            if (/^([a-z][a-z0-9+.-]*:|\/\/|#|\/)/i.test(v)) return v; // 绝对 URL / 协议相对 / 锚点 / 站点根路径
-            return baseDir + v;
-        }
-        function sanitizeHtml(html, baseDir) {
-            var doc = new DOMParser().parseFromString(html, 'text/html');
-            var all = doc.body.querySelectorAll('*');
-            for (var i = 0; i < all.length; i++) {
-                var el = all[i];
-                if (BAD_TAGS[el.tagName]) { el.remove(); continue; }
-                var attrs = el.attributes;
-                for (var j = attrs.length - 1; j >= 0; j--) {
-                    var name = attrs[j].name.toLowerCase();
-                    var val = attrs[j].value;
-                    if (name.indexOf('on') === 0) { el.removeAttribute(attrs[j].name); continue; }
-                    if ((name === 'href' || name === 'src' || name === 'xlink:href') &&
-                        /^\s*(javascript|vbscript|data):/i.test(val)) {
-                        el.removeAttribute(attrs[j].name);
-                    }
-                }
-                if (el.tagName === 'IMG') el.setAttribute('src', resolveRel(el.getAttribute('src'), baseDir));
-                else if (el.tagName === 'A') el.setAttribute('href', resolveRel(el.getAttribute('href'), baseDir));
-            }
-            return doc.body.innerHTML;
-        }
-        // marked 按需加载：首页/列表页用不到它（约 39KB），只有准备渲染正文时才注入
-        // 失败也 resolve，让 renderMarkdown 走纯文本兜底，不因为一个渲染器把文章卡住
-        var _markedLoading = null;
-        function loadMarked() {
-            if (window.marked) return Promise.resolve();
-            if (!_markedLoading) {
-                _markedLoading = new Promise(function (resolve) {
-                    var s = document.createElement('script');
-                    s.src = 'vendor/marked.min.js';
-                    s.onload = resolve;
-                    s.onerror = resolve;
-                    document.head.appendChild(s);
-                });
-            }
-            return _markedLoading;
-        }
-        function renderMarkdown(md, baseDir) {
-            var src = String(md == null ? '' : md);
-            if (window.marked && typeof window.marked.parse === 'function') {
-                try { return sanitizeHtml(window.marked.parse(src), baseDir); } catch (e) { /* 落到下面的纯文本兜底 */ }
-            }
-            // marked 不可用（脚本未加载）时退化为纯文本，至少不丢内容
-            return '<p>' + esc(src).replace(/\n/g, '<br>') + '</p>';
-        }
+        // 已抽到 lib/magazine.js：esc / resolveRel / sanitizeHtml / loadMarked / renderMarkdown。
+        // 与「佳作集」页共用一份——sanitizeHtml 是安全边界，两处实现一旦漂移就等于留了个洞。
 
         // 封面为站点内静态资源，直接交给 <img> 加载（失败时由 onerror → coverFallback 隐藏）
         // 若 cover 写成完整 http(s) URL 则直用
@@ -458,7 +451,8 @@
         function preloadNext(idx, total) {
             if (!currentIssue || idx + 1 >= total) return;
             var next = (currentIssue.articles || [])[idx + 1];
-            if (next) fetchArticle(currentIssue, next).catch(function () {});
+            // HTML 篇不需要预取：其正文由 iframe 自己加载，没必要拉文本
+            if (next && next.type !== 'html') fetchArticle(currentIssue, next).catch(function () {});
         }
 
         async function loadIssues() {
@@ -481,7 +475,8 @@
 
                 // 首屏即预取最新一期的第一篇：点开阅读器时正文已到，不必等
                 var latestArts = (issues[0] && issues[0].articles) || [];
-                if (latestArts.length) fetchArticle(issues[0], latestArts[0]).catch(function () {});
+                // HTML 篇不用预取正文（交给 iframe 自己加载）
+                if (latestArts.length && latestArts[0].type !== 'html') fetchArticle(issues[0], latestArts[0]).catch(function () {});
 
                 // 分享深链：?issue=<期id>&article=<序号> 自动打开阅读弹窗定位到该篇
                 // article 只用文章序号（slug 的 "NN-" 前缀，如 01），链接更短
@@ -587,6 +582,10 @@
                     '<span class="toc-num">' + (i + 1) + '</span>' + esc(arts[i].title) + '</button>';
             }
             document.getElementById('tocList').innerHTML = tocHtml;
+            // 重开阅读器时目录默认收起，篇名先置为首篇（无文章则清空，避免残留上一期）
+            var tocCur = document.getElementById('tocCurrent');
+            if (tocCur) tocCur.textContent = arts[0] ? (arts[0].title || '') : '';
+            closeToc();
 
             document.getElementById('reader').classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -615,9 +614,21 @@
                 items[i].classList.toggle('active', Number(items[i].dataset.idx) === idx);
             }
 
+            // 移动端：下拉开关上显示当前篇名，选中后自动收起
+            var cur = document.getElementById('tocCurrent');
+            if (cur) cur.textContent = arts[idx].title || '';
+            closeToc();
+
             var area = document.getElementById('articleArea');
             var article = arts[idx];
             area.innerHTML = '<div class="article-loading"><span class="spinner"></span>正在加载文章</div>';
+
+            // HTML 篇整篇交给 iframe 渲染，不走 fetch + marked
+            if (article.type === 'html') {
+                renderArticle(article, null, idx, arts.length);
+                preloadNext(idx, arts.length);
+                return;
+            }
 
             fetchArticle(currentIssue, article).then(async function (md) {
                 await loadMarked(); // 正文要用 marked 渲染，这里再等它到货
@@ -643,9 +654,18 @@
             var html = '<div class="article-head"><h3>' + esc(title) + '</h3>' +
                 '<div class="art-meta">' + metaParts.join(' · ') + '</div>' +
                 '<button type="button" class="art-share" onclick="shareArticle()">分享本篇</button></div>';
-            var body = renderMarkdown(md, articleDir(currentIssue, article));
+            var body;
+            if (article.type === 'html') {
+                // 整篇自包含文档：直接 iframe 加载 magazine/<期id>/<slug>.html，不经 marked。
+                // sandbox 给脚本执行与弹窗能力，但不给「顶层导航」，避免被嵌页面顶掉整个阅读器
+                body = '<iframe class="article-html" src="' + esc(articleUrl(currentIssue, article)) + '"' +
+                    ' sandbox="allow-scripts allow-same-origin allow-popups" loading="lazy" title="' + esc(title) + '"></iframe>';
+            } else {
+                var rendered = renderMarkdown(md, articleDir(currentIssue, article));
+                body = String(md || '').trim() ? rendered : '<p style="color:var(--text-tertiary);">（暂无正文）</p>';
+            }
             html += '<div class="article-content">';
-            html += (String(md || '').trim() ? body : '<p style="color:var(--text-tertiary);">（暂无正文）</p>');
+            html += body;
             html += '</div>';
             area.innerHTML = html;
             renderNav(idx, total);
@@ -681,9 +701,8 @@
             var url = new URL('.', location.href).href +
                 '?issue=' + encodeURIComponent(currentIssue.id) +
                 '&article=' + encodeURIComponent(String(a.slug).split('-')[0]);
-            var data = { title: currentIssue.title, text: a.title, url: url };
-            if (navigator.share) { navigator.share(data).catch(function () {}); }
-            else if (navigator.clipboard && navigator.clipboard.writeText) {
+            // 只复制链接，不调系统分享面板（与佳作集页分享按钮口径一致）
+            if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(url).then(
                     function () { showToast('链接已复制'); },
                     function () { showToast('复制失败'); }
@@ -691,10 +710,19 @@
             } else { showToast(url); }
         }
 
+        // 移动端目录下拉：桌面端目录常驻，不收也不显示开关（toc-current / toc-arrow 被 CSS 隐藏）
+        function closeToc() {
+            var toc = document.getElementById('readerToc');
+            if (toc) toc.classList.remove('open');
+            var btn = document.getElementById('tocToggle');
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+        }
+
         function closeReader() {
             document.getElementById('reader').classList.remove('active');
             document.body.style.overflow = '';
             currentIssue = null;
+            closeToc();
         }
 
         // ===== Toast =====
@@ -707,6 +735,13 @@
         }
 
         document.getElementById('readerClose').addEventListener('click', closeReader);
+        // 移动端目录开关：只有窄屏才有意义，桌面端目录常驻，点了不做切换
+        document.getElementById('tocToggle').addEventListener('click', function () {
+            if (!window.matchMedia('(max-width:640px)').matches) return;
+            var toc = document.getElementById('readerToc');
+            var open = toc.classList.toggle('open');
+            this.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
         document.getElementById('reader').addEventListener('click', function (e) {
             if (e.target === this) closeReader();
         });
@@ -722,6 +757,10 @@
 
         // 加载索引与系列数据
         loadIssues(); loadSeries();
+
+        // 渲染库 marked 在首屏加载完成后再后台预热，不抢首屏带宽；等用户点开正文时它多半已就绪。
+        // loadMarked 内部缓存同一个 Promise，openReader 里再调不会重复注入脚本。
+        window.addEventListener('load', function () { loadMarked(); });
 
         // 加载系列卡片（同目录 series.json）
         async function loadSeries() {
