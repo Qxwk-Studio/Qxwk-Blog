@@ -160,11 +160,14 @@
         .read-title { margin: 0; font-family: var(--serif); font-weight: 600;
             font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.25; letter-spacing: 0.03em; }
 
-        /* 正文排版：衬线、行高 2、首行缩进 2em——中文书籍的读法 */
-        .md { font-family: var(--serif); font-size: 1.02rem; line-height: 2; color: var(--ink); word-break: break-word; }
-        .md p { margin: 0 0 1em; text-indent: 2em; white-space: pre-line; }
+        /* 正文排版：衬线、行高 2——中文书籍的读法。
+           首行缩进写在容器上让子孙继承，正文各块级元素（段落 / 标题 / 列表 / 引用 / 表格）都缩两字，
+           唯独代码块要顶格，所以在 .md pre 上把它清掉 */
+        .md { font-family: var(--serif); font-size: 1.02rem; line-height: 2; color: var(--ink);
+            text-indent: 2em; word-break: break-word; }
+        .md p { margin: 0 0 1em; white-space: pre-line; }
         .md h1, .md h2, .md h3, .md h4 { font-family: var(--serif); font-weight: 600; line-height: 1.4;
-            margin: 1.8em 0 0.7em; text-indent: 0; }
+            margin: 1.8em 0 0.7em; }
         .md h1 { font-size: 1.5rem; } .md h2 { font-size: 1.25rem; }
         .md h3 { font-size: 1.1rem; } .md h4 { font-size: 1rem; }
         .md ul, .md ol { margin: 0 0 1em; padding-left: 1.6em; }
@@ -173,12 +176,10 @@
         .md blockquote { margin: 0 0 1em; padding: 0.75em 1.1em;
             border-left: 2px solid var(--accent); background: var(--accent-soft); border-radius: 2px;
             color: var(--ink-soft); }
-        /* 引用块已有左内边距，内部段落不再重复首行缩进 */
-        .md blockquote p { text-indent: 0; }
         .md code { font-family: var(--mono); font-size: 0.88em; background: var(--shade);
             padding: 0.1em 0.35em; border-radius: 2px; }
         .md pre { background: var(--shade); border: 1px solid var(--rule); border-radius: 2px;
-            padding: 14px 16px; overflow: auto; margin: 0 0 1.2em; }
+            text-indent: 0; padding: 14px 16px; overflow: auto; margin: 0 0 1.2em; }
         .md pre code { background: none; padding: 0; }
         .md a { color: var(--accent); text-underline-offset: 3px; }
         .md img { max-width: 100%; display: block; margin: 1.6em auto; }
@@ -186,7 +187,8 @@
         .md hr { border: none; text-align: center; margin: 1.8em 0; }
         .md hr::before { content: '· · ·'; letter-spacing: 0.6em; color: var(--muted); }
         .md table { width: 100%; border-collapse: collapse; margin: 0 0 1.2em; font-size: 0.92rem; }
-        .md th, .md td { border: 1px solid var(--rule); padding: 8px 12px; text-align: left; }
+        /* 表格与代码块同列：单元格里首行再缩两字会显得歪，显式清零，不靠各引擎继承行为碰运气 */
+        .md th, .md td { border: 1px solid var(--rule); padding: 8px 12px; text-align: left; text-indent: 0; }
         .md th { background: var(--shade); font-weight: 600; }
         /* HTML 篇：整篇交给 iframe，作者自带样式与脚本，本页只给一个框 */
         .md-html { display: block; }

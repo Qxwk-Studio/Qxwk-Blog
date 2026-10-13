@@ -157,8 +157,10 @@
         .article-head { margin-bottom:22px; padding-bottom:14px; border-bottom:1px solid var(--border); }
         .article-head h3 { font-size:1.5rem; font-weight:700; color:var(--text-primary); margin-bottom:8px; }
         .article-head .art-meta { font-size:0.82rem; color:var(--text-tertiary); }
+        /* 首行缩进落在容器上让子孙继承：段落 / 标题 / 列表 / 引用都缩两字，代码块要顶格，在 pre 上清掉 */
+        .article-content { text-indent:2em; }
         .article-content p { font-size:1rem; color:var(--text-primary); line-height:1.95;
-            white-space:pre-line; margin-bottom:16px; text-indent:2em; }
+            white-space:pre-line; margin-bottom:16px; }
         .article-content p:last-child { margin-bottom:0; }
         /* Markdown 正文内的块级元素（h2/h3/列表/引用/代码/表格/图片） */
         .article-content h1, .article-content h2, .article-content h3, .article-content h4 {
@@ -172,9 +174,9 @@
         .article-content li > ul, .article-content li > ol { margin:6px 0 0; }
         .article-content blockquote { margin:0 0 16px; padding:8px 16px; border-left:3px solid var(--border);
             background:var(--bg); border-radius:0 var(--radius-sm) var(--radius-sm) 0; color:var(--text-secondary); }
-        .article-content blockquote p { text-indent:0; color:inherit; }
+        .article-content blockquote p { color:inherit; }
         .article-content pre { margin:0 0 16px; padding:14px 16px; background:var(--bg); border:1px solid var(--border);
-            border-radius:var(--radius-sm); overflow-x:auto; }
+            border-radius:var(--radius-sm); overflow-x:auto; text-indent:0; }
         .article-content pre code { font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
             font-size:0.86rem; line-height:1.7; white-space:pre; text-indent:0; }
         .article-content code { font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
@@ -183,7 +185,8 @@
         .article-content img { max-width:100%; height:auto; border-radius:var(--radius-sm); margin:8px 0; }
         .article-content hr { border:none; border-top:1px solid var(--border); margin:26px 0; }
         .article-content table { width:100%; border-collapse:collapse; margin:0 0 16px; font-size:0.9rem; }
-        .article-content th, .article-content td { border:1px solid var(--border); padding:8px 10px; text-align:left; }
+        /* 表格与代码块同列：单元格里首行再缩两字会显得歪，显式清零，不靠各引擎继承行为碰运气 */
+        .article-content th, .article-content td { border:1px solid var(--border); padding:8px 10px; text-align:left; text-indent:0; }
         .article-content th { background:var(--bg); font-weight:600; }
         .article-content a { color:var(--primary); }
         /* HTML 篇：整篇自包含文档嵌在 iframe 里，固定高度 + 内部滚动（不依赖被嵌页面配合报高）。
