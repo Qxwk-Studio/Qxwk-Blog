@@ -94,6 +94,22 @@
             opacity: 0.9; margin: 32px 0 12px; }
         .count { margin: 0 0 8px; font-size: 0.76rem; letter-spacing: 0.14em; color: var(--muted); }
 
+        /* ===== 分类选项卡 =====
+           栏名为衬线大字、白话小字跟在栏名右侧，选中态只落一道墨色下划线；
+           这是「刊目」的语汇，不用其它页面那种圆角胶囊 */
+        /* 栏与栏左右分散、整体居中：space-evenly 对称铺开，不必写死间距，栏数增减也不用改 */
+        .tabs { display: flex; flex-wrap: wrap; justify-content: space-evenly; gap: 12px 20px; margin: 0 0 10px; }
+        /* flex-end：小字底边与栏名底边齐平；对齐是按含 margin 的盒算的，所以小字上下都不能留边距 */
+        .tab { display: flex; align-items: flex-end; gap: 8px; padding: 0 0 7px; background: none; border: none;
+            border-bottom: 2px solid transparent; cursor: pointer; text-align: left;
+            font-family: var(--serif); font-size: 1rem; line-height: 1.2; letter-spacing: 0.16em;
+            color: var(--muted); transition: color 0.18s ease, border-color 0.18s ease; }
+        .tab-note { font-family: var(--sans); font-size: 0.68rem; letter-spacing: 0.08em; opacity: 0.8; }
+        .tab:hover { color: var(--ink); }
+        .tab[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+        .tab[aria-pressed="true"] .tab-note { opacity: 1; color: var(--ink-soft); }
+        .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 2px; }
+
         /* ===== 索引：编号栏 + 内容栏，行与行用细分隔线，不用卡片 ===== */
         .index { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
         .entry { border-bottom: 1px solid var(--rule); }
@@ -261,6 +277,8 @@
                 <h1>佳作集</h1>
                 <p class="deck">编辑从往期月刊中挑出的值得细细品味的佳作。按刊目顺序排列，点开任一条即可在本页展卷阅读。</p>
                 <div class="rule"></div>
+                <!-- 分类选项卡：栏名与白话小字都由 featured.json 的 categories 渲染，改名不用动代码 -->
+                <div class="tabs" id="featTabs" role="group" aria-label="按分类筛选刊目"></div>
                 <p class="count" id="featCount">刊目载入中…</p>
             </header>
 
@@ -297,7 +315,9 @@
     <script>
         // 站点根：用 URL 解析而非写死 '/'，子路径部署下也正确（同首页分享链接）
         var HOME = new URL('../', location.href).href;
-        var FEATURED = [];
+        var FEATURED = [];              // 全部刊目；刊号在渲染时按当前栏内顺序现算，不存在条目上
+        var CATS = [];                  // 分类选项卡，来自 featured.json 的 categories
+        var CAT = null;                 // 当前选中的栏；为空则不过滤
         var CURRENT = null;             // 当前展开的篇目，分享按钮据此拼深链
         var esc = Mag.esc;
 
@@ -321,14 +341,15 @@
             cal: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'
         };
 
-        // 编号倒序：首条给最高号（total），往下递减，与刊目自上而下的优先度一致
-        function entryHtml(f, i, total) {
+        // 编号倒序：栏内首条给最高号，往下递减，与刊目自上而下的优先度一致。
+        // 号由渲染时现算而没有存在条目上：这是栏内独立编号，同一篇在人文栏与社科栏各排各的号
+        function entryHtml(f, i, no) {
             var meta = (f.series ? '<span class="series">' + ICO.book + esc(f.series) + '</span>' : '') +
                 (f.series && f.tag ? '<span class="sep">·</span>' : '') +
                 (f.tag ? '<span class="tag">' + ICO.hash + esc(f.tag) + '</span>' : '');
             return '<li class="entry" style="animation-delay:' + (i * 45) + 'ms">' +
                 '<a href="' + esc(deepLink(f)) + '" data-issue="' + esc(f.issue) + '" data-article="' + esc(f.article) + '">' +
-                    '<span class="num" aria-hidden="true">' + pad(total - i) + '</span>' +
+                    '<span class="num" aria-hidden="true">' + esc(no) + '</span>' +
                     '<span class="body">' +
                         (meta ? '<span class="meta">' + meta + '</span>' : '') +
                         '<span class="title">' + esc(f.title) + '</span>' +
@@ -344,15 +365,45 @@
                 '</li>';
         }
 
-        function render(list) {
+        // 选项卡：栏名（label）与栏名下的白话小字（note）都取自 json，改名不必改代码
+        function renderTabs() {
+            var box = document.getElementById('featTabs');
+            if (!CATS.length) { box.hidden = true; return; }
+            box.hidden = false;
+            var html = '';
+            for (var i = 0; i < CATS.length; i++) {
+                var c = CATS[i];
+                html += '<button class="tab" type="button" data-cat="' + esc(c.id) + '"' +
+                    ' aria-pressed="' + (c.id === CAT ? 'true' : 'false') + '">' + esc(c.label) +
+                    (c.note ? '<span class="tab-note">' + esc(c.note) + '</span>' : '') +
+                    '</button>';
+            }
+            box.innerHTML = html;
+        }
+
+        // 当前栏的刊目；未选栏（json 没给 categories）时就是全部
+        function visible() {
+            if (!CAT) return FEATURED;
+            return FEATURED.filter(function (f) { return (f.cats || []).indexOf(CAT) !== -1; });
+        }
+
+        function renderIndex() {
+            var list = visible();
             var index = document.getElementById('featIndex');
-            document.getElementById('featCount').textContent = list.length ? '共 ' + list.length + ' 篇' : '';
+            var count = document.getElementById('featCount');
+            // 选中某一栏后不再报数：列表已按栏重排，再压一行「本栏 x 篇 · 全集 y 篇」是噪音。
+            // 空元素仍会占 .count 的 8px 下边距，所以连元素一起隐掉，别只清空文字
+            var label = CAT ? '' : (FEATURED.length ? '共 ' + FEATURED.length + ' 篇' : '');
+            count.textContent = label;
+            count.hidden = !label;
             if (!list.length) {
-                index.innerHTML = '<li class="state">刊目暂空——编辑还没有挑出优秀内容。</li>';
+                index.innerHTML = '<li class="state">' +
+                    (CAT ? '本栏暂空——这一类的佳作还没挑出来。' : '刊目暂空——编辑还没有挑出优秀内容。') + '</li>';
                 return;
             }
             var html = '';
-            for (var i = 0; i < list.length; i++) html += entryHtml(list[i], i, list.length);
+            // 栏内独立编号：本栏末条为 01，往上递增（倒序与整体一致）
+            for (var i = 0; i < list.length; i++) html += entryHtml(list[i], i, pad(list.length - i));
             index.innerHTML = html;
         }
 
@@ -437,6 +488,16 @@
             e.preventDefault();
             openArticle(f);
         });
+        // 切栏：只重排刊目列表，不动地址栏也不重新取 json
+        document.getElementById('featTabs').addEventListener('click', function (e) {
+            var b = e.target.closest ? e.target.closest('button.tab') : null;
+            if (!b) return;
+            var id = b.getAttribute('data-cat');
+            if (!id || id === CAT) return;
+            CAT = id;
+            renderTabs();
+            renderIndex();
+        });
         document.getElementById('backToIndex').addEventListener('click', closeArticle);
         document.getElementById('shareBtn').addEventListener('click', shareArticle);
 
@@ -449,7 +510,10 @@
             .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
             .then(function (d) {
                 FEATURED = d.featured || [];
-                render(FEATURED);
+                CATS = d.categories || [];
+                CAT = CATS.length ? CATS[0].id : null;
+                renderTabs();
+                renderIndex();
                 // 支持被直接深链进来：/featured/?issue=..&article=..
                 var sp = new URLSearchParams(location.search);
                 var issue = sp.get('issue'), article = sp.get('article');
@@ -459,7 +523,7 @@
                 }
             })
             .catch(function (e) {
-                document.getElementById('featCount').textContent = '';
+                var c = document.getElementById('featCount'); c.textContent = ''; c.hidden = true;
                 document.getElementById('featIndex').innerHTML =
                     '<li class="state error">刊目载入失败：' + esc(e.message) + '</li>';
             });
