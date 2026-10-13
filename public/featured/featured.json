@@ -1,9 +1,12 @@
 {
-  "_comment": "categories 为分类选项卡，note 为推荐语；featured 每条用 cats 指定所属栏。issue 为期 id，article 为文章序号，slug 为正文文件名去掉扩展名；type 省略即 md，写 \"html\" 则 iframe 嵌入同名 .html。",
+  "_comment_1": "categories 为分类选项卡，featured 每条用 cats 指定所属栏。slug 为正文文件名去掉扩展名，type 省略即 md，写 html 则是同名的 .html 文件。",
+  "_comment_2": "issue 为期号，article为文章序号，title 为文章标题，author 为作者，series 为系列名，tag 为系列期号，note 为推荐语。",
+
   "categories": [
     { "id": "human", "label": "文心", "note": "人文文章" },
     { "id": "social", "label": "经世", "note": "社科文章" }
   ],
+
   "featured": [
     {
       "issue": "2026-10",
@@ -14,7 +17,7 @@
       "series": "篝火夜话",
       "tag": "第009期",
       "cats": "human",
-      "note": "青春期大抵是人生最矛盾的时光。既然宇宙如此辽阔、人生如此短暂，眼前的奔波与焦虑究竟意义何在？本文写给所有爱看星星的少年，也写给曾经少年的你。"
+      "note": "青春期大抵是人生最矛盾的时光。既然宇宙如此辽阔、人生如此短暂，眼前的奔波与焦虑究竟意义何在？本文写给所有爱看星星的少年，也写给少年的你。"
     },
     {
       "issue": "2026-09",
