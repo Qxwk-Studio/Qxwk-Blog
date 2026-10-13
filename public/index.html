@@ -42,7 +42,8 @@
         .series-chip { display:flex; align-items:center; gap:10px; padding:10px 14px;
             background:var(--bg); border:1px solid var(--border); border-radius:12px; cursor:default;
             transition:transform var(--transition), border-color var(--transition), box-shadow var(--transition);
-            flex:1 0 calc(33.333% - 7px); min-width:0; }
+            /* 末尾不满一行时保持原宽、靠左排列，不被拉伸占满（grow=0）；要占满才改成 1 */
+            flex:0 0 calc(33.333% - 7px); min-width:0; }
         .series-chip:hover { transform:translateY(-1px); border-color:var(--primary); box-shadow:var(--shadow-sm); }
         .series-chip .sc-icon { font-size:1.3rem; line-height:1; flex-shrink:0; }
         .series-chip .sc-info { min-width:0; flex:1; }
@@ -209,7 +210,7 @@
             .issues-grid { grid-template-columns:repeat(2,1fr); }
             .featured { grid-template-columns:1fr; }
             .featured-cover { min-height:200px; aspect-ratio:16/9; }
-            .series-chip { flex:1 0 calc(50% - 5px); }
+            .series-chip { flex:0 0 calc(50% - 5px); }
         }
         @media (max-width:640px) {
             .main { padding:24px 16px 40px; }
